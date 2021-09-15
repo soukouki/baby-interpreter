@@ -19,6 +19,10 @@ module.exports.lexicalAnalyse = function (source) {
   let readPosition = 0
   while (readPosition < source.length) {
     switch (source[readPosition]) {
+      case ' ':
+      case '\t':
+        readPosition += 1
+        break
       case '+':
         tokens.push({
           type: 'Add',
@@ -51,3 +55,34 @@ module.exports.lexicalAnalyse = function (source) {
   }
   return tokens
 }
+
+function parseExression(tokens) {
+  return {
+    expression: null,
+  }
+}
+
+function parseSource(tokens) {
+  const statements = []
+  let readPosition = 0
+  while (readPosition < tokens.length) {
+    const { expression, parsedTokensCount } = parseExression(tokens.slice(readPosition))
+    if (expression) {
+      statements.push(expression)
+      readPosition += parsedTokensCount
+    } else if (tokens[readPosition].type === 'Newline') {
+      readPosition += 1
+    } else {
+      return {
+        type: 'SyntaxError',
+        message: `予期しないトークン\`${tokens[readPosition].type}\`が渡されました`,
+      }
+    }
+  }
+  return {
+    type: 'Source',
+    statements,
+  }
+}
+
+module.exports.parse = parseSource

@@ -2,7 +2,7 @@
 
 const interpriter = require('./interpriter')
 
-const { lexicalAnalyse } = interpriter
+const { lexicalAnalyse, parse } = interpriter
 
 describe('字句解析', () => {
   test('1', () => {
@@ -26,7 +26,17 @@ describe('字句解析', () => {
       { type: 'Newline' },
       { type: 'Int', value: 2 }])
   })
+  test('空白は無視する', () => {
+    expect(lexicalAnalyse('\t 1 ')).toStrictEqual([{ type: 'Int', value: 1 }])
+    expect(lexicalAnalyse('     ')).toStrictEqual([])
+  })
   test('無効な文字列', () => {
     expect(lexicalAnalyse('あ')).toStrictEqual([{ type: 'UnknownCharacter', value: 'あ' }])
+  })
+})
+
+describe('構文解析', () => {
+  test('空', () => {
+    expect(parse([])).toStrictEqual({ type: 'Source', statements: [] })
   })
 })
