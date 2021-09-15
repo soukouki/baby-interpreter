@@ -3,11 +3,12 @@ module.exports = {
         "browser": true,
         "es2021": true
     },
-    "extends": "standard",
+    "extends": "airbnb",
     "parserOptions": {
         "ecmaVersion": 12,
         "sourceType": "module"
     },
     "rules": {
+        "semi": ["error", "never"]
     }
 };
