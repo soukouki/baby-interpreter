@@ -20,6 +20,12 @@ describe('字句解析', () => {
       { type: 'Add' },
       { type: 'Int', value: 2 }])
   })
+  test('改行', () => {
+    expect(lexicalAnalyse('1\n2')).toStrictEqual([
+      { type: 'Int', value: 1 },
+      { type: 'Newline' },
+      { type: 'Int', value: 2 }])
+  })
   test('無効な文字列', () => {
     expect(lexicalAnalyse('あ')).toStrictEqual([{ type: 'UnknownCharacter', value: 'あ' }])
   })

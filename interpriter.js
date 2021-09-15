@@ -25,6 +25,12 @@ module.exports.lexicalAnalyse = function (source) {
         })
         readPosition += 1
         break
+      case '\n':
+        tokens.push({
+          type: 'Newline',
+        })
+        readPosition += 1
+        break
       default:
         if (isDigit(source[readPosition])) {
           const digitsCount = countDigitsFromSource(source.substring(readPosition))
