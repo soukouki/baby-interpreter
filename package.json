@@ -1,0 +1,19 @@
+{
+  "name": "minimum-interpriter",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "eslint *.js || echo 'If you fix it, you can run `npm run lint`.'",
+    "lint": "eslint *.js --fix"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "eslint": "^7.32.0"
+  },
+  "dependencies": {
+    "eslint-config-standard": "^16.0.3"
+  }
+}
