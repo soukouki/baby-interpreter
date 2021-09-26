@@ -25,7 +25,7 @@ module.exports.lexicalAnalyse = function (source) {
         break
       case '+':
         tokens.push({
-          type: 'Add',
+          type: 'Plus',
         })
         readPosition += 1
         break
@@ -61,18 +61,36 @@ function parseLiteral(tokens) {
   switch (head.type) {
     case 'Int':
       return {
-        type: 'IntLiteral',
-        value: head.value,
+        expression: {
+          type: 'IntLiteral',
+          value: head.value,
+        },
+        parsedTokensCount: 1,
       }
     default:
-      return null
+      return {
+        expression: null,
+      }
   }
 }
 
-function parseExression(tokens) {
-  return {
-    expression: parseLiteral(tokens),
+function parseAddSubExpression(tokens) {
+  const { expression: left, parsedTokensCount: leftTokensCount } = parseLiteral(tokens)
+  if (tokens[leftTokensCount] && tokens[leftTokensCount].type === 'Plus') {
+    const {
+      expression: right,
+      parsedTokensCount: rightTokensCount,
+    } = parseLiteral(tokens.slice(leftTokensCount + 1))
+    return {
+      expression: { type: 'Add', left, right },
+      parsedTokensCount: leftTokensCount + rightTokensCount + 1,
+    }
   }
+  return { expression: left, parsedTokensCount: leftTokensCount }
+}
+
+function parseExression(tokens) {
+  return parseAddSubExpression(tokens)
 }
 
 function parseSource(tokens) {
@@ -89,6 +107,7 @@ function parseSource(tokens) {
       return {
         type: 'SyntaxError',
         message: `予期しないトークン\`${tokens[readPosition].type}\`が渡されました`,
+        statements,
       }
     }
   }

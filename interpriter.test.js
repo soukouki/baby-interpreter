@@ -12,12 +12,12 @@ describe('字句解析', () => {
     expect(lexicalAnalyse('123')).toStrictEqual([{ type: 'Int', value: 123 }])
   })
   test('+', () => {
-    expect(lexicalAnalyse('+')).toStrictEqual([{ type: 'Add' }])
+    expect(lexicalAnalyse('+')).toStrictEqual([{ type: 'Plus' }])
   })
   test('1+2', () => {
     expect(lexicalAnalyse('1+2')).toStrictEqual([
       { type: 'Int', value: 1 },
-      { type: 'Add' },
+      { type: 'Plus' },
       { type: 'Int', value: 2 }])
   })
   test('改行', () => {
@@ -47,6 +47,24 @@ describe('構文解析', () => {
         type: 'Source',
         statements: [
           { type: 'IntLiteral', value: 1 },
+        ],
+      },
+    )
+  })
+  test('1+2', () => {
+    expect(parse([
+      { type: 'Int', value: 1 },
+      { type: 'Plus' },
+      { type: 'Int', value: 2 },
+    ])).toStrictEqual(
+      {
+        type: 'Source',
+        statements: [
+          {
+            type: 'Add',
+            left: { type: 'IntLiteral', value: 1 },
+            right: { type: 'IntLiteral', value: 2 },
+          },
         ],
       },
     )
