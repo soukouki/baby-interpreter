@@ -39,4 +39,16 @@ describe('構文解析', () => {
   test('空', () => {
     expect(parse([])).toStrictEqual({ type: 'Source', statements: [] })
   })
+  test('1', () => {
+    expect(parse([
+      { type: 'Int', value: 1 },
+    ])).toStrictEqual(
+      {
+        type: 'Source',
+        statements: [
+          { type: 'IntLiteral', value: 1 },
+        ],
+      },
+    )
+  })
 })

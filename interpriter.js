@@ -56,9 +56,22 @@ module.exports.lexicalAnalyse = function (source) {
   return tokens
 }
 
+function parseLiteral(tokens) {
+  const head = tokens[0]
+  switch (head.type) {
+    case 'Int':
+      return {
+        type: 'IntLiteral',
+        value: head.value,
+      }
+    default:
+      return null
+  }
+}
+
 function parseExression(tokens) {
   return {
-    expression: null,
+    expression: parseLiteral(tokens),
   }
 }
 
