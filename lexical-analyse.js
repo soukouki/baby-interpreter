@@ -3,10 +3,26 @@ function isDigit(char) {
   return '0'.charCodeAt(0) <= charCode && charCode <= '9'.charCodeAt(0)
 }
 
-function countDigitsFromSource(source) {
+function isIdentChar(char) {
+  const charCode = char.charCodeAt(0)
+  return 'a'.charCodeAt(0) <= charCode && charCode <= 'z'.charCodeAt(0)
+}
+
+function countDigits(source) {
   let readPosition = 0
   while (readPosition < source.length) {
     if (!isDigit(source[readPosition])) {
+      return readPosition
+    }
+    readPosition += 1
+  }
+  return readPosition
+}
+
+function countIdentChars(source) {
+  let readPosition = 0
+  while (readPosition < source.length) {
+    if (!isIdentChar(source[readPosition])) {
       return readPosition
     }
     readPosition += 1
@@ -37,12 +53,19 @@ module.exports.lexicalAnalyse = function (source) {
         break
       default:
         if (isDigit(source[readPosition])) {
-          const digitsCount = countDigitsFromSource(source.substring(readPosition))
+          const digitsCount = countDigits(source.substring(readPosition))
           tokens.push({
             type: 'Int',
             value: parseInt(source.substring(readPosition, readPosition + digitsCount), 10),
           })
           readPosition += digitsCount
+        } else if (isIdentChar(source[readPosition])) {
+          const identCharsCount = countIdentChars(source.substring(readPosition))
+          tokens.push({
+            type: 'Ident',
+            value: source.substring(readPosition, readPosition + identCharsCount),
+          })
+          readPosition += identCharsCount
         } else {
           // 不明な文字
           tokens.push({

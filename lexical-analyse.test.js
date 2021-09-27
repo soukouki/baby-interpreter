@@ -31,4 +31,10 @@ describe('字句解析', () => {
   test('無効な文字列', () => {
     expect(lexicalAnalyse('あ')).toStrictEqual([{ type: 'UnknownCharacter', value: 'あ' }])
   })
+  test('識別子', () => {
+    expect(lexicalAnalyse('test abc')).toStrictEqual([
+      { type: 'Ident', value: 'test' },
+      { type: 'Ident', value: 'abc' },
+    ])
+  })
 })
