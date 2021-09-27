@@ -87,4 +87,21 @@ describe('構文解析', () => {
       },
     )
   })
+  test('複数行', () => {
+    expect(parse([
+      { type: 'Newline' },
+      { type: 'Int', value: 1 },
+      { type: 'Newline' },
+      { type: 'Int', value: 2 },
+      { type: 'Newline' },
+    ])).toStrictEqual(
+      {
+        type: 'Source',
+        statements: [
+          { type: 'IntLiteral', value: 1 },
+          { type: 'IntLiteral', value: 2 },
+        ],
+      },
+    )
+  })
 })
