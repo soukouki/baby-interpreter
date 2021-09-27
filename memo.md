@@ -32,11 +32,11 @@ stmts = { stmt }
 stmt = ( expr　";" | assign ";" | if )
 assign = identifier "=" expr
 if = "if" "(" expr ")" "{" stmts "}" [ "else" "{" stmts "}" ]
-def_func = "def" identifier "(" cpmma_separated_exprs ")" "{" stmts "}"
+def_func = "def" identifier "(" comma_separated_exprs ")" "{" stmts "}"
 
 expr = add_sub_expr
 add_sub_expr = func_call_expr , { "+" , func_call_expr }
-func_call_expr = identifier "(" cpmma_separated_exprs ")" | parenthesis_expr
+func_call_expr = identifier "(" comma_separated_exprs ")" | parenthesis_expr
 comma_separated_exprs = ( [ expr { , expr } ] )
 parenthesis_expr = "(" expr ")" | value
 value = identifier | literal
