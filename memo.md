@@ -13,6 +13,7 @@
 |expr|expression|式|
 |stmt|statement|文|
 |ident|identifier|識別子|
+|args|arguments|引数|
 |func|function|関数|
 |paren|parenthesis|丸括弧|
 |add|addition|足し算|
@@ -28,7 +29,7 @@
 source = { expr , "\n" | "\n" }
 expr = add_sub_expr
 add_sub_expr = func_call_expr , { "+" , func_call_expr }
-func_call_expr = identifier '(' expr ')' | parenthesis_expr
+func_call_expr = identifier '(' ( [ expr { , expr } ] ) ')' | parenthesis_expr
 parenthesis_expr = '(' expr ')' | value
 value = identifier | literal
 literal = number

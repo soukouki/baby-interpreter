@@ -47,6 +47,10 @@ module.exports.lexicalAnalyse = function (source) {
         tokens.push({ type: 'RParen' })
         readPosition += 1
         break
+      case ',':
+        tokens.push({ type: 'Comma' })
+        readPosition += 1
+        break
       case ' ':
       case '\t':
         readPosition += 1

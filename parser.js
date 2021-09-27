@@ -41,13 +41,66 @@ function parseParenthesisExpression(tokens) {
   return parseValue(tokens)
 }
 
+function parseFunctionCallExpression(tokens) {
+  const name = tokens[0]
+  if (name?.type === 'Ident' && tokens[1]?.type === 'LParen') {
+    const {
+      expression: firstExpression,
+      parsedTokensCount: firstParsedTokensCount,
+    // eslint-disable-next-line no-use-before-define
+    } = parseExression(tokens.slice(2))
+    if (firstExpression === null && tokens[2]?.type === 'RParen') {
+      return {
+        expression: {
+          type: 'FuncCall',
+          name: name.value,
+          arguments: [],
+        },
+        parsedTokensCount: 3,
+      }
+    }
+    if (tokens[firstParsedTokensCount + 2]?.type === 'RParen') {
+      return {
+        expression: {
+          type: 'FuncCall',
+          name: name.value,
+          arguments: [firstExpression],
+        },
+        parsedTokensCount: firstParsedTokensCount + 3,
+      }
+    }
+    const args = [firstExpression]
+    let readPosition = firstParsedTokensCount + 2
+    while (tokens[readPosition]?.type === 'Comma') {
+      readPosition += 1
+      // eslint-disable-next-line no-use-before-define
+      const { expression, parsedTokensCount } = parseExression(tokens.slice(readPosition))
+      if (expression === null) {
+        break
+      }
+      args.push(expression)
+      readPosition += parsedTokensCount
+      if (tokens[readPosition]?.type === 'RParen') {
+        return {
+          expression: {
+            type: 'FuncCall',
+            name: name.value,
+            arguments: args,
+          },
+        }
+      }
+    }
+  }
+  return parseParenthesisExpression(tokens)
+}
+
 function parseAddSubExpression(tokens) {
-  let { expression: left, parsedTokensCount: readPosition } = parseParenthesisExpression(tokens)
+  let { expression: left, parsedTokensCount: readPosition } = parseFunctionCallExpression(tokens)
   while (tokens[readPosition]?.type === 'Plus') {
     const {
       expression: right,
       parsedTokensCount: rightTokensCount,
-    } = parseParenthesisExpression(tokens.slice(readPosition + 1))
+    } = parseFunctionCallExpression(tokens.slice(readPosition + 1))
     if (right === null) {
       return { expression: null }
     }

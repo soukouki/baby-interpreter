@@ -124,4 +124,71 @@ describe('構文解析', () => {
       },
     )
   })
+  test('関数呼び出し', () => {
+    expect(parse(lex('call()'))).toStrictEqual(
+      {
+        type: 'Source',
+        statements: [
+          {
+            type: 'FuncCall',
+            name: 'call',
+            arguments: [],
+          },
+        ],
+      },
+    )
+    expect(parse(lex('abc(12)'))).toStrictEqual(
+      {
+        type: 'Source',
+        statements: [
+          {
+            type: 'FuncCall',
+            name: 'abc',
+            arguments: [
+              { type: 'IntLiteral', value: 12 },
+            ],
+          },
+        ],
+      },
+    )
+    expect(parse(lex('xxx((12), 3+4)'))).toStrictEqual(
+      {
+        type: 'Source',
+        statements: [
+          {
+            type: 'FuncCall',
+            name: 'xxx',
+            arguments: [
+              { type: 'IntLiteral', value: 12 },
+              {
+                type: 'Add',
+                left: { type: 'IntLiteral', value: 3 },
+                right: { type: 'IntLiteral', value: 4 },
+              },
+            ],
+          },
+        ],
+      },
+    )
+    expect(parse(lex('x()+y()'))).toStrictEqual(
+      {
+        type: 'Source',
+        statements: [
+          {
+            type: 'Add',
+            left: {
+              type: 'FuncCall',
+              name: 'x',
+              arguments: [],
+            },
+            right: {
+              type: 'FuncCall',
+              name: 'y',
+              arguments: [],
+            },
+          },
+        ],
+      },
+    )
+  })
 })

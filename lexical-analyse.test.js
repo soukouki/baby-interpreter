@@ -43,4 +43,7 @@ describe('字句解析', () => {
       { type: 'RParen' },
     ])
   })
+  test('コンマ', () => {
+    expect(lexicalAnalyse(',')).toStrictEqual([{ type: 'Comma' }])
+  })
 })
