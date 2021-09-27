@@ -75,18 +75,16 @@ function parseLiteral(tokens) {
 }
 
 function parseAddSubExpression(tokens) {
-  const { expression: left, parsedTokensCount: leftTokensCount } = parseLiteral(tokens)
-  if (tokens[leftTokensCount] && tokens[leftTokensCount].type === 'Plus') {
+  let { expression: left, parsedTokensCount: readPosition } = parseLiteral(tokens)
+  while (tokens[readPosition] && tokens[readPosition].type === 'Plus') {
     const {
       expression: right,
       parsedTokensCount: rightTokensCount,
-    } = parseLiteral(tokens.slice(leftTokensCount + 1))
-    return {
-      expression: { type: 'Add', left, right },
-      parsedTokensCount: leftTokensCount + rightTokensCount + 1,
-    }
+    } = parseLiteral(tokens.slice(readPosition + 1))
+    left = { type: 'Add', left, right }
+    readPosition += rightTokensCount + 1
   }
-  return { expression: left, parsedTokensCount: leftTokensCount }
+  return { expression: left, parsedTokensCount: readPosition }
 }
 
 function parseExression(tokens) {

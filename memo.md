@@ -11,7 +11,7 @@
 ```ebnf
 source = { expr , "\n" | "\n" }
 expr = add_sub_expr
-add_sub_expr = func_call_expr , { "+" , func_call_expr | func_call_expr }
+add_sub_expr = func_call_expr , { "+" , func_call_expr }
 func_call_expr = func_name '(' expr ')' | parenthesis_expr
 parenthesis_expr = '(' expr ')' | literal
 literal = number
