@@ -37,6 +37,19 @@ describe('構文解析', () => {
       },
     )
   })
+  test('1+', () => {
+    expect(parse([
+      { type: 'Int', value: 1 },
+      { type: 'Plus' },
+    ]).type).toBe('SyntaxError')
+  })
+  test('1+(', () => {
+    expect(parse([
+      { type: 'Int', value: 1 },
+      { type: 'Plus' },
+      { type: 'LParen' },
+    ]).type).toBe('SyntaxError')
+  })
   test('1+2+3', () => {
     expect(parse(lexicalAnalyse('1+2+3'))).toStrictEqual(
       {
@@ -68,6 +81,45 @@ describe('構文解析', () => {
         statements: [
           { type: 'IntLiteral', value: 1 },
           { type: 'IntLiteral', value: 2 },
+        ],
+      },
+    )
+  })
+  const lex = lexicalAnalyse
+  test('変数', () => {
+    expect(parse(lex('abc'))).toStrictEqual(
+      {
+        type: 'Source',
+        statements: [
+          { type: 'Variable', name: 'abc' },
+        ],
+      },
+    )
+  })
+  test('括弧', () => {
+    expect(parse(lex('(123)'))).toStrictEqual(
+      {
+        type: 'Source',
+        statements: [
+          { type: 'IntLiteral', value: 123 },
+        ],
+      },
+    )
+  })
+  test('入れ子の括弧', () => {
+    expect(parse(lex('1+(2+3)'))).toStrictEqual(
+      {
+        type: 'Source',
+        statements: [
+          {
+            type: 'Add',
+            left: { type: 'IntLiteral', value: 1 },
+            right: {
+              type: 'Add',
+              left: { type: 'IntLiteral', value: 2 },
+              right: { type: 'IntLiteral', value: 3 },
+            },
+          },
         ],
       },
     )
