@@ -41,57 +41,63 @@ function parseParenthesisExpression(tokens) {
   return parseValue(tokens)
 }
 
-function parseFunctionCallExpression(tokens) {
-  const name = tokens[0]
-  if (name?.type === 'Ident' && tokens[1]?.type === 'LParen') {
-    const {
-      expression: firstExpression,
+function parseFunctionCallArguments(tokens) {
+  const {
+    expression: firstExpression,
+    parsedTokensCount: firstParsedTokensCount,
+  // eslint-disable-next-line no-use-before-define
+  } = parseExression(tokens)
+  if (firstExpression === null && tokens[0]?.type === 'RParen') {
+    return {
+      args: [],
+      parsedTokensCount: 0,
+    }
+  }
+  if (tokens[firstParsedTokensCount]?.type === 'RParen') {
+    return {
+      args: [firstExpression],
       parsedTokensCount: firstParsedTokensCount,
+    }
+  }
+  const args = [firstExpression]
+  let readPosition = firstParsedTokensCount
+  while (tokens[readPosition]?.type === 'Comma') {
+    readPosition += 1
     // eslint-disable-next-line no-use-before-define
-    } = parseExression(tokens.slice(2))
-    if (firstExpression === null && tokens[2]?.type === 'RParen') {
-      return {
-        expression: {
-          type: 'FuncCall',
-          name: name.value,
-          arguments: [],
-        },
-        parsedTokensCount: 3,
-      }
+    const { expression, parsedTokensCount } = parseExression(tokens.slice(readPosition))
+    if (expression === null) {
+      break
     }
-    if (tokens[firstParsedTokensCount + 2]?.type === 'RParen') {
+    args.push(expression)
+    readPosition += parsedTokensCount
+    if (tokens[readPosition]?.type === 'RParen') {
       return {
-        expression: {
-          type: 'FuncCall',
-          name: name.value,
-          arguments: [firstExpression],
-        },
-        parsedTokensCount: firstParsedTokensCount + 3,
-      }
-    }
-    const args = [firstExpression]
-    let readPosition = firstParsedTokensCount + 2
-    while (tokens[readPosition]?.type === 'Comma') {
-      readPosition += 1
-      // eslint-disable-next-line no-use-before-define
-      const { expression, parsedTokensCount } = parseExression(tokens.slice(readPosition))
-      if (expression === null) {
-        break
-      }
-      args.push(expression)
-      readPosition += parsedTokensCount
-      if (tokens[readPosition]?.type === 'RParen') {
-        return {
-          expression: {
-            type: 'FuncCall',
-            name: name.value,
-            arguments: args,
-          },
-        }
+        args,
+        parsedTokensCount: readPosition,
       }
     }
   }
-  return parseParenthesisExpression(tokens)
+  return null
+}
+
+function parseFunctionCallExpression(tokens) {
+  const name = tokens[0]
+  if (name?.type !== 'Ident' || tokens[1]?.type !== 'LParen') {
+    return parseParenthesisExpression(tokens)
+  }
+  const argsAndParsedTokensCount = parseFunctionCallArguments(tokens.slice(2))
+  if (argsAndParsedTokensCount === null) {
+    return parseParenthesisExpression(tokens)
+  }
+  const { args, parsedTokensCount } = argsAndParsedTokensCount
+  return {
+    expression: {
+      type: 'FuncCall',
+      name: name.value,
+      arguments: args,
+    },
+    parsedTokensCount: parsedTokensCount + 3,
+  }
 }
 
 function parseAddSubExpression(tokens) {
