@@ -3,14 +3,10 @@
 const { evaluate } = require('./evaluator')
 const { parse } = require('./parser')
 const { lexicalAnalyse } = require('./lexical-analyse')
+const { emptyEnvironment } = require('./value')
 
 function lexAndParse(source) {
   return parse(lexicalAnalyse(source))
-}
-
-const emptyEnvironment = {
-  variables: new Map(),
-  functions: new Map(),
 }
 
 describe('評価', () => {
