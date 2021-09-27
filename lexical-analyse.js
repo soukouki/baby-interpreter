@@ -35,14 +35,20 @@ module.exports.lexicalAnalyse = function (source) {
   let readPosition = 0
   while (readPosition < source.length) {
     switch (source[readPosition]) {
-      case ' ':
-      case '\t':
+      case '+':
+        tokens.push({ type: 'Plus' })
         readPosition += 1
         break
-      case '+':
-        tokens.push({
-          type: 'Plus',
-        })
+      case '(':
+        tokens.push({ type: 'LParen' })
+        readPosition += 1
+        break
+      case ')':
+        tokens.push({ type: 'RParen' })
+        readPosition += 1
+        break
+      case ' ':
+      case '\t':
         readPosition += 1
         break
       case '\n':

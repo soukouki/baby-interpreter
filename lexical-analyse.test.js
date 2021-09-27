@@ -37,4 +37,10 @@ describe('字句解析', () => {
       { type: 'Ident', value: 'abc' },
     ])
   })
+  test('括弧', () => {
+    expect(lexicalAnalyse('()')).toStrictEqual([
+      { type: 'LParen' },
+      { type: 'RParen' },
+    ])
+  })
 })
