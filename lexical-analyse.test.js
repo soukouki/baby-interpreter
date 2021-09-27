@@ -3,6 +3,15 @@
 const { lexicalAnalyse } = require('./lexical-analyse')
 
 describe('字句解析', () => {
+  test('*', () => {
+    expect(lexicalAnalyse('*')).toStrictEqual([{ type: 'Asterisk' }])
+  })
+  test('==', () => {
+    expect(lexicalAnalyse('==')).toStrictEqual([{ type: 'isEqual' }])
+  })
+  test('=', () => {
+    expect(lexicalAnalyse('=')).toStrictEqual([{ type: 'Equal' }])
+  })
   test('1', () => {
     expect(lexicalAnalyse('1')).toStrictEqual([{ type: 'Int', value: 1 }])
   })

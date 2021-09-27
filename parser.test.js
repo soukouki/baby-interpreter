@@ -7,6 +7,15 @@ describe('構文解析', () => {
   test('空', () => {
     expect(parse([])).toStrictEqual({ type: 'Source', statements: [] })
   })
+  test('-', () => {
+    expect(parse([{ type: 'Minus' }])).toStrictEqual(
+      {
+        message: '予期しないトークン`Minus`が渡されました',
+        statements: [],
+        type: 'SyntaxError',
+      },
+    )
+  })
   test('1', () => {
     expect(parse([
       { type: 'Int', value: 1 },

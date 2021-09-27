@@ -69,12 +69,43 @@ function evaluateAdd(ast, environment) {
   }
 }
 
+function evaluateSub(ast, environment) {
+  const {
+    result: leftResult,
+    environment: leftEnvironment,
+    // eslint-disable-next-line no-use-before-define
+  } = evaluate(ast.left, environment)
+  if (leftResult.isError) {
+    return { result: leftResult, environment: leftEnvironment }
+  }
+  if (leftResult.type !== 'IntValue') {
+    return typeError(leftResult.type)
+  }
+  const {
+    result: rightResult,
+    environment: rightEnvironment,
+    // eslint-disable-next-line no-use-before-define
+  } = evaluate(ast.right, leftEnvironment)
+  if (rightResult.isError) {
+    return { result: rightResult, environment: rightEnvironment }
+  }
+  if (rightResult.type !== 'IntValue') {
+    return typeError(rightResult.type)
+  }
+  return {
+    result: Value.intValue(leftResult.value - rightResult.value),
+    environment: rightEnvironment,
+  }
+}
+
 function evaluate(ast, environment) {
   switch (ast.type) {
     case 'Source':
       return evaluateStatements(ast, environment)
     case 'Add':
       return evaluateAdd(ast, environment)
+    case 'Sub':
+      return evaluateSub(ast, environment)
     case 'IntLiteral':
       return {
         result: Value.intValue(ast.value),

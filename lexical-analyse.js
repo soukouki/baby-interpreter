@@ -56,11 +56,11 @@ module.exports.lexicalAnalyse = function (source) {
         tokens.push({ type: 'Plus' })
         readPosition += 1
         break
-      case '{':
+      case '(':
         tokens.push({ type: 'LParen' })
         readPosition += 1
         break
-      case '}':
+      case ')':
         tokens.push({ type: 'RParen' })
         readPosition += 1
         break
