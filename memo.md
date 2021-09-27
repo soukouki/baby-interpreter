@@ -15,6 +15,7 @@ add_sub_expr = func_call_expr , { "+" , func_call_expr }
 func_call_expr = func_name '(' expr ')' | parenthesis_expr
 parenthesis_expr = '(' expr ')' | literal
 literal = number
+func_name = identifier
 ```
 
 exprはexpression(式)の略、stmtはstatement(文)の略
