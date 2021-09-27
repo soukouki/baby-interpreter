@@ -50,4 +50,19 @@ describe('評価', () => {
       },
     )
   })
+  test('1+2', () => {
+    expect(evaluate(lexAndParse('1+2'), emptyEnvironment)).toStrictEqual(
+      {
+        result: {
+          type: 'IntValue',
+          isError: false,
+          value: 3,
+        },
+        environment: {
+          variables: new Map(),
+          functions: new Map(),
+        },
+      },
+    )
+  })
 })
