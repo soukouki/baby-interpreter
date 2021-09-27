@@ -5,7 +5,7 @@ function isDigit(char) {
 
 function isIdentChar(char) {
   const charCode = char.charCodeAt(0)
-  return 'a'.charCodeAt(0) <= charCode && charCode <= 'z'.charCodeAt(0)
+  return ('a'.charCodeAt(0) <= charCode && charCode <= 'z'.charCodeAt(0)) || ('A'.charCodeAt(0) <= charCode && charCode <= 'Z'.charCodeAt(0))
 }
 
 function countDigits(source) {
@@ -35,15 +35,32 @@ module.exports.lexicalAnalyse = function (source) {
   let readPosition = 0
   while (readPosition < source.length) {
     switch (source[readPosition]) {
+      case '-':
+        readPosition += 1
+        tokens.push({ type: 'Minus' })
+        break
+      case '*':
+        readPosition += 1
+        tokens.push({ type: 'Asterisk' })
+        break
+      case '=':
+        readPosition += 1
+        if (source[readPosition] === '=') {
+          tokens.push({ type: 'isEqual' })
+          readPosition += 1
+        } else {
+          tokens.push({ type: 'Equal' })
+        }
+        break
       case '+':
         tokens.push({ type: 'Plus' })
         readPosition += 1
         break
-      case '(':
+      case '{':
         tokens.push({ type: 'LParen' })
         readPosition += 1
         break
-      case ')':
+      case '}':
         tokens.push({ type: 'RParen' })
         readPosition += 1
         break
@@ -66,14 +83,22 @@ module.exports.lexicalAnalyse = function (source) {
           const digitsCount = countDigits(source.substring(readPosition))
           tokens.push({
             type: 'Int',
-            value: parseInt(source.substring(readPosition, readPosition + digitsCount), 10),
+            value: parseInt(
+              source.substring(readPosition, readPosition + digitsCount),
+              10,
+            ),
           })
           readPosition += digitsCount
         } else if (isIdentChar(source[readPosition])) {
-          const identCharsCount = countIdentChars(source.substring(readPosition))
+          const identCharsCount = countIdentChars(
+            source.substring(readPosition),
+          )
           tokens.push({
             type: 'Ident',
-            value: source.substring(readPosition, readPosition + identCharsCount),
+            value: source.substring(
+              readPosition,
+              readPosition + identCharsCount,
+            ),
           })
           readPosition += identCharsCount
         } else {
