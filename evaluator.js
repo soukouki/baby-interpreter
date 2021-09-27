@@ -3,7 +3,7 @@ const Value = require('./value')
 function environmentError(type, environment) {
   return {
     result: {
-      type: 'EnviromentError',
+      type: 'EnvironmentError',
       isError: true,
       message: `無効なast\`${type}\`が渡されました`,
     },

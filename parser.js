@@ -33,7 +33,7 @@ function parseValue(tokens) {
 function parseParenthesisExpression(tokens) {
   if (tokens[0]?.type === 'LParen') {
     // eslint-disable-next-line no-use-before-define
-    const { expression, parsedTokensCount } = parseExression(tokens.slice(1))
+    const { expression, parsedTokensCount } = parseExpression(tokens.slice(1))
     if (tokens[parsedTokensCount + 1]?.type === 'RParen') {
       return { expression, parsedTokensCount: parsedTokensCount + 2 }
     }
@@ -46,7 +46,7 @@ function parseFunctionCallArguments(tokens) {
     expression: firstExpression,
     parsedTokensCount: firstParsedTokensCount,
   // eslint-disable-next-line no-use-before-define
-  } = parseExression(tokens)
+  } = parseExpression(tokens)
   if (firstExpression === null && tokens[0]?.type === 'RParen') {
     return {
       args: [],
@@ -64,7 +64,7 @@ function parseFunctionCallArguments(tokens) {
   while (tokens[readPosition]?.type === 'Comma') {
     readPosition += 1
     // eslint-disable-next-line no-use-before-define
-    const { expression, parsedTokensCount } = parseExression(tokens.slice(readPosition))
+    const { expression, parsedTokensCount } = parseExpression(tokens.slice(readPosition))
     if (expression === null) {
       break
     }
@@ -116,7 +116,7 @@ function parseAddSubExpression(tokens) {
   return { expression: left, parsedTokensCount: readPosition }
 }
 
-function parseExression(tokens) {
+function parseExpression(tokens) {
   return parseAddSubExpression(tokens)
 }
 
@@ -124,7 +124,7 @@ function parseSource(tokens) {
   const statements = []
   let readPosition = 0
   while (readPosition < tokens.length) {
-    const { expression, parsedTokensCount } = parseExression(tokens.slice(readPosition))
+    const { expression, parsedTokensCount } = parseExpression(tokens.slice(readPosition))
     if (expression) {
       statements.push(expression)
       readPosition += parsedTokensCount
