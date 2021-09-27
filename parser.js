@@ -102,16 +102,28 @@ function parseFunctionCallExpression(tokens) {
 
 function parseAddSubExpression(tokens) {
   let { expression: left, parsedTokensCount: readPosition } = parseFunctionCallExpression(tokens)
-  while (tokens[readPosition]?.type === 'Plus') {
-    const {
-      expression: right,
-      parsedTokensCount: rightTokensCount,
-    } = parseFunctionCallExpression(tokens.slice(readPosition + 1))
-    if (right === null) {
-      return { expression: null }
+  while (tokens[readPosition]?.type === 'Plus' || tokens[readPosition]?.type === 'Minus') {
+    if (tokens[readPosition]?.type === 'Plus') {
+      const {
+        expression: right,
+        parsedTokensCount: rightTokensCount,
+      } = parseFunctionCallExpression(tokens.slice(readPosition + 1))
+      if (right === null) {
+        return { expression: null }
+      }
+      left = { type: 'Add', left, right }
+      readPosition += rightTokensCount + 1
+    } else {
+      const {
+        expression: right,
+        parsedTokensCount: rightTokensCount,
+      } = parseFunctionCallExpression(tokens.slice(readPosition + 1))
+      if (right === null) {
+        return { expression: null }
+      }
+      left = { type: 'Sub', left, right }
+      readPosition += rightTokensCount + 1
     }
-    left = { type: 'Add', left, right }
-    readPosition += rightTokensCount + 1
   }
   return { expression: left, parsedTokensCount: readPosition }
 }
