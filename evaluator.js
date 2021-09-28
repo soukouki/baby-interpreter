@@ -1,4 +1,4 @@
-const Value = require('./value')
+const { intValue, nullValue } = require('./value')
 
 function environmentError(type, environment) {
   return {
@@ -23,7 +23,7 @@ function typeError(type, environment) {
 }
 
 function evaluateStatements(ast, environment) {
-  let result = Value.null
+  let result = nullValue
   let env = environment
   // forEachではreturnを使って値を返せないので書きづらく、
   // またreduceでは条件分岐が複雑になり書きづらいので、for文を使って処理しています
@@ -64,7 +64,7 @@ function evaluateAdd(ast, environment) {
     return typeError(rightResult.type)
   }
   return {
-    result: Value.intValue(leftResult.value + rightResult.value),
+    result: intValue(leftResult.value + rightResult.value),
     environment: rightEnvironment,
   }
 }
@@ -73,11 +73,22 @@ function evaluate(ast, environment) {
   switch (ast.type) {
     case 'Source':
       return evaluateStatements(ast, environment)
+    case 'Assignment':
+      return {
+        result: nullValue,
+        environment: {
+          variables: environment.variables.set(
+            ast.name,
+            evaluate(ast.expression, environment).result,
+          ),
+          functions: environment.functions,
+        },
+      }
     case 'Add':
       return evaluateAdd(ast, environment)
     case 'IntLiteral':
       return {
-        result: Value.intValue(ast.value),
+        result: intValue(ast.value),
         environment,
       }
     default:

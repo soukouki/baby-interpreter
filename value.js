@@ -1,4 +1,4 @@
-exports.null = {
+exports.nullValue = {
   type: 'Null',
   isError: false,
 }

@@ -76,4 +76,24 @@ describe('評価', () => {
       },
     )
   })
+  test('代入文', () => {
+    expect(evaluate(lexAndParse('a=1;'), emptyEnvironment)).toStrictEqual(
+      {
+        result: {
+          type: 'Null',
+          isError: false,
+        },
+        environment: {
+          variables: new Map([
+            ['a', {
+              type: 'IntValue',
+              isError: false,
+              value: 1,
+            }],
+          ]),
+          functions: new Map(),
+        },
+      },
+    )
+  })
 })
