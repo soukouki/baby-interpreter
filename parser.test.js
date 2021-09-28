@@ -63,6 +63,12 @@ describe('構文解析', () => {
     test('複数の文(空)', () => {
       expect(parse([{ type: 'Semicolon' }]).type).toBe('SyntaxError')
     })
+    test('複数の文(空)', () => {
+      expect(parse([
+        { type: 'Semicolon' },
+        { type: 'Semicolon' },
+      ]).type).toBe('SyntaxError')
+    })
   })
   const lex = lexicalAnalyse
   test('1+2+3;', () => {
@@ -206,5 +212,23 @@ describe('構文解析', () => {
         },
       )
     })
+  })
+  test('代入文', () => {
+    expect(parse(lex('two=1+1;'))).toStrictEqual(
+      {
+        type: 'Source',
+        statements: [
+          {
+            type: 'Assignment',
+            name: 'two',
+            expression: {
+              type: 'Add',
+              left: { type: 'IntLiteral', value: 1 },
+              right: { type: 'IntLiteral', value: 1 },
+            },
+          },
+        ],
+      },
+    )
   })
 })

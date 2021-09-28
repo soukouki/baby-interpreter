@@ -15,6 +15,9 @@ describe('字句解析', () => {
   test('+', () => {
     expect(lexicalAnalyse('+')).toStrictEqual([{ type: 'Plus' }])
   })
+  test('=', () => {
+    expect(lexicalAnalyse('=')).toStrictEqual([{ type: 'Equal' }])
+  })
   test('1+2', () => {
     expect(lexicalAnalyse('1+2')).toStrictEqual([
       { type: 'Int', value: 1 },

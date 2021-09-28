@@ -120,12 +120,37 @@ function parseExpression(tokens) {
   return parseAddSubExpression(tokens)
 }
 
-function parseStatement(tokens) {
-  const { expression, parsedTokensCount } = parseExpression(tokens)
-  if (expression && tokens[parsedTokensCount]?.type === 'Semicolon') {
-    return {
+function parseAssignment(tokens) {
+  if (tokens[0]?.type !== 'Ident' || tokens[1]?.type !== 'Equal') {
+    return { result: null }
+  }
+  const { expression, parsedTokensCount } = parseExpression(tokens.slice(2))
+  if (!expression) {
+    return { result: null }
+  }
+  return {
+    assignment: {
+      type: 'Assignment',
+      name: tokens[0].value,
       expression,
-      parsedTokensCount,
+    },
+    parsedTokensCount: parsedTokensCount + 2,
+  }
+}
+
+function parseStatement(tokens) {
+  const { expression, parsedTokensCount: parsedExpressionTokensCount } = parseExpression(tokens)
+  if (expression && tokens[parsedExpressionTokensCount]?.type === 'Semicolon') {
+    return {
+      statement: expression,
+      parsedTokensCount: parsedExpressionTokensCount + 1,
+    }
+  }
+  const { assignment, parsedTokensCount: parsedAssignmentTokensCount } = parseAssignment(tokens)
+  if (assignment) {
+    return {
+      statement: assignment,
+      parsedTokensCount: parsedAssignmentTokensCount + 1,
     }
   }
   return { expression: null }
@@ -135,15 +160,19 @@ function parseSource(tokens) {
   const statements = []
   let readPosition = 0
   while (readPosition < tokens.length) {
-    const { expression, parsedTokensCount } = parseStatement(tokens.slice(readPosition))
-    if (expression) {
-      statements.push(expression)
-      readPosition += parsedTokensCount + 1
+    const {
+      statement: stmt,
+      parsedTokensCount: parsedExpressionTokensCount,
+    } = parseStatement(tokens.slice(readPosition))
+    if (stmt && stmt?.type !== 'SyntaxError') {
+      statements.push(stmt)
+      readPosition += parsedExpressionTokensCount
+    } else if (stmt && stmt?.type === 'SyntaxError') {
+      return stmt
     } else {
       return {
         type: 'SyntaxError',
-        message: `予期しないトークン\`${tokens[readPosition].type}\`が渡されました`,
-        statements,
+        message: `予期しないトークン\`${tokens[readPosition]?.type}\`, \`${tokens[readPosition + 1]?.type}\`が渡されました`,
       }
     }
   }
