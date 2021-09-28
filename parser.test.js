@@ -7,9 +7,10 @@ describe('構文解析', () => {
   test('空', () => {
     expect(parse([])).toStrictEqual({ type: 'Source', statements: [] })
   })
-  test('1', () => {
+  test('1;', () => {
     expect(parse([
       { type: 'Int', value: 1 },
+      { type: 'Semicolon' },
     ])).toStrictEqual(
       {
         type: 'Source',
@@ -19,11 +20,12 @@ describe('構文解析', () => {
       },
     )
   })
-  test('1+2', () => {
+  test('1+2;', () => {
     expect(parse([
       { type: 'Int', value: 1 },
       { type: 'Plus' },
       { type: 'Int', value: 2 },
+      { type: 'Semicolon' },
     ])).toStrictEqual(
       {
         type: 'Source',
@@ -37,21 +39,31 @@ describe('構文解析', () => {
       },
     )
   })
-  test('1+', () => {
-    expect(parse([
-      { type: 'Int', value: 1 },
-      { type: 'Plus' },
-    ]).type).toBe('SyntaxError')
+  describe('シンタックスエラー系', () => {
+    test('1', () => {
+      expect(parse([
+        { type: 'Int', value: 1 },
+      ]).type).toBe('SyntaxError')
+    })
+    test('1+;', () => {
+      expect(parse([
+        { type: 'Int', value: 1 },
+        { type: 'Plus' },
+        { type: 'Semicolon' },
+      ]).type).toBe('SyntaxError')
+    })
+    test('1+(;', () => {
+      expect(parse([
+        { type: 'Int', value: 1 },
+        { type: 'Plus' },
+        { type: 'LParen' },
+        { type: 'Semicolon' },
+      ]).type).toBe('SyntaxError')
+    })
   })
-  test('1+(', () => {
-    expect(parse([
-      { type: 'Int', value: 1 },
-      { type: 'Plus' },
-      { type: 'LParen' },
-    ]).type).toBe('SyntaxError')
-  })
-  test('1+2+3', () => {
-    expect(parse(lexicalAnalyse('1+2+3'))).toStrictEqual(
+  const lex = lexicalAnalyse
+  test('1+2+3;', () => {
+    expect(parse(lex('1+2+3;'))).toStrictEqual(
       {
         type: 'Source',
         statements: [
@@ -68,14 +80,8 @@ describe('構文解析', () => {
       },
     )
   })
-  test('複数行', () => {
-    expect(parse([
-      { type: 'Newline' },
-      { type: 'Int', value: 1 },
-      { type: 'Newline' },
-      { type: 'Int', value: 2 },
-      { type: 'Newline' },
-    ])).toStrictEqual(
+  test('複数の文', () => {
+    expect(parse(lex('1;\n2;'))).toStrictEqual(
       {
         type: 'Source',
         statements: [
@@ -85,9 +91,16 @@ describe('構文解析', () => {
       },
     )
   })
-  const lex = lexicalAnalyse
+  test('複数の文(空)', () => {
+    expect(parse(lex(';;'))).toStrictEqual(
+      {
+        type: 'Source',
+        statements: [],
+      },
+    )
+  })
   test('変数', () => {
-    expect(parse(lex('abc'))).toStrictEqual(
+    expect(parse(lex('abc;'))).toStrictEqual(
       {
         type: 'Source',
         statements: [
@@ -97,7 +110,7 @@ describe('構文解析', () => {
     )
   })
   test('括弧', () => {
-    expect(parse(lex('(123)'))).toStrictEqual(
+    expect(parse(lex('(123);'))).toStrictEqual(
       {
         type: 'Source',
         statements: [
@@ -107,7 +120,7 @@ describe('構文解析', () => {
     )
   })
   test('入れ子の括弧', () => {
-    expect(parse(lex('1+(2+3)'))).toStrictEqual(
+    expect(parse(lex('1+(2+3);'))).toStrictEqual(
       {
         type: 'Source',
         statements: [
@@ -124,71 +137,79 @@ describe('構文解析', () => {
       },
     )
   })
-  test('関数呼び出し', () => {
-    expect(parse(lex('call()'))).toStrictEqual(
-      {
-        type: 'Source',
-        statements: [
-          {
-            type: 'FuncCall',
-            name: 'call',
-            arguments: [],
-          },
-        ],
-      },
-    )
-    expect(parse(lex('abc(12)'))).toStrictEqual(
-      {
-        type: 'Source',
-        statements: [
-          {
-            type: 'FuncCall',
-            name: 'abc',
-            arguments: [
-              { type: 'IntLiteral', value: 12 },
-            ],
-          },
-        ],
-      },
-    )
-    expect(parse(lex('xxx((12), 3+4)'))).toStrictEqual(
-      {
-        type: 'Source',
-        statements: [
-          {
-            type: 'FuncCall',
-            name: 'xxx',
-            arguments: [
-              { type: 'IntLiteral', value: 12 },
-              {
-                type: 'Add',
-                left: { type: 'IntLiteral', value: 3 },
-                right: { type: 'IntLiteral', value: 4 },
+  describe('関数呼び出し', () => {
+    test('引数0個', () => {
+      expect(parse(lex('call();'))).toStrictEqual(
+        {
+          type: 'Source',
+          statements: [
+            {
+              type: 'FuncCall',
+              name: 'call',
+              arguments: [],
+            },
+          ],
+        },
+      )
+    })
+    test('引数1個', () => {
+      expect(parse(lex('abc(12);'))).toStrictEqual(
+        {
+          type: 'Source',
+          statements: [
+            {
+              type: 'FuncCall',
+              name: 'abc',
+              arguments: [
+                { type: 'IntLiteral', value: 12 },
+              ],
+            },
+          ],
+        },
+      )
+    })
+    test('引数2個', () => {
+      expect(parse(lex('xxx((12), 3+4);'))).toStrictEqual(
+        {
+          type: 'Source',
+          statements: [
+            {
+              type: 'FuncCall',
+              name: 'xxx',
+              arguments: [
+                { type: 'IntLiteral', value: 12 },
+                {
+                  type: 'Add',
+                  left: { type: 'IntLiteral', value: 3 },
+                  right: { type: 'IntLiteral', value: 4 },
+                },
+              ],
+            },
+          ],
+        },
+      )
+    })
+    test('引数と演算', () => {
+      expect(parse(lex('x()+y();'))).toStrictEqual(
+        {
+          type: 'Source',
+          statements: [
+            {
+              type: 'Add',
+              left: {
+                type: 'FuncCall',
+                name: 'x',
+                arguments: [],
               },
-            ],
-          },
-        ],
-      },
-    )
-    expect(parse(lex('x()+y()'))).toStrictEqual(
-      {
-        type: 'Source',
-        statements: [
-          {
-            type: 'Add',
-            left: {
-              type: 'FuncCall',
-              name: 'x',
-              arguments: [],
+              right: {
+                type: 'FuncCall',
+                name: 'y',
+                arguments: [],
+              },
             },
-            right: {
-              type: 'FuncCall',
-              name: 'y',
-              arguments: [],
-            },
-          },
-        ],
-      },
-    )
+          ],
+        },
+      )
+    })
   })
 })

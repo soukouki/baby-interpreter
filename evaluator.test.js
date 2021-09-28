@@ -10,7 +10,7 @@ function lexAndParse(source) {
 }
 
 describe('評価', () => {
-  test('1', () => {
+  test('1;', () => {
     expect(evaluate({
       type: 'Source',
       statements: [
@@ -32,7 +32,7 @@ describe('評価', () => {
         },
       },
     )
-    expect(evaluate(lexAndParse('123'), emptyEnvironment)).toStrictEqual(
+    expect(evaluate(lexAndParse('123;'), emptyEnvironment)).toStrictEqual(
       {
         result: {
           type: 'IntValue',
@@ -46,8 +46,8 @@ describe('評価', () => {
       },
     )
   })
-  test('1+2', () => {
-    expect(evaluate(lexAndParse('1+2'), emptyEnvironment)).toStrictEqual(
+  test('1+2;', () => {
+    expect(evaluate(lexAndParse('1+2;'), emptyEnvironment)).toStrictEqual(
       {
         result: {
           type: 'IntValue',

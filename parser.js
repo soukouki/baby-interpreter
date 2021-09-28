@@ -124,12 +124,15 @@ function parseSource(tokens) {
   const statements = []
   let readPosition = 0
   while (readPosition < tokens.length) {
-    const { expression, parsedTokensCount } = parseExpression(tokens.slice(readPosition))
-    if (expression) {
-      statements.push(expression)
-      readPosition += parsedTokensCount
-    } else if (tokens[readPosition].type === 'Newline') {
+    if (tokens[readPosition].type === 'Semicolon') {
       readPosition += 1
+      // eslint-disable-next-line no-continue
+      continue
+    }
+    const { expression, parsedTokensCount } = parseExpression(tokens.slice(readPosition))
+    if (expression && tokens[readPosition + parsedTokensCount]?.type === 'Semicolon') {
+      statements.push(expression)
+      readPosition += parsedTokensCount + 1
     } else {
       return {
         type: 'SyntaxError',
