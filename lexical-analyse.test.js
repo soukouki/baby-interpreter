@@ -40,10 +40,16 @@ describe('字句解析', () => {
       { type: 'Ident', value: 'abc' },
     ])
   })
-  test('括弧', () => {
+  test('丸括弧', () => {
     expect(lexicalAnalyse('()')).toStrictEqual([
       { type: 'LParen' },
       { type: 'RParen' },
+    ])
+  })
+  test('波括弧', () => {
+    expect(lexicalAnalyse('{}')).toStrictEqual([
+      { type: 'LBrace' },
+      { type: 'RBrace' },
     ])
   })
   test('コンマ', () => {
@@ -51,5 +57,11 @@ describe('字句解析', () => {
   })
   test('セミコロン', () => {
     expect(lexicalAnalyse(';')).toStrictEqual([{ type: 'Semicolon' }])
+  })
+  test('キーワード', () => {
+    expect(lexicalAnalyse('if def')).toStrictEqual([
+      { type: 'If' },
+      { type: 'Def' },
+    ])
   })
 })

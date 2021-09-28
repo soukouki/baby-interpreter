@@ -51,6 +51,14 @@ module.exports.lexicalAnalyse = function (source) {
         tokens.push({ type: 'RParen' })
         readPosition += 1
         break
+      case '{':
+        tokens.push({ type: 'LBrace' })
+        readPosition += 1
+        break
+      case '}':
+        tokens.push({ type: 'RBrace' })
+        readPosition += 1
+        break
       case ',':
         tokens.push({ type: 'Comma' })
         readPosition += 1
@@ -74,10 +82,24 @@ module.exports.lexicalAnalyse = function (source) {
           readPosition += digitsCount
         } else if (isIdentChar(source[readPosition])) {
           const identCharsCount = countIdentChars(source.substring(readPosition))
-          tokens.push({
-            type: 'Ident',
-            value: source.substring(readPosition, readPosition + identCharsCount),
-          })
+          const name = source.substring(readPosition, readPosition + identCharsCount)
+          switch (name) {
+            case 'if':
+              tokens.push({
+                type: 'If',
+              })
+              break
+            case 'def':
+              tokens.push({
+                type: 'Def',
+              })
+              break
+            default:
+              tokens.push({
+                type: 'Ident',
+                value: name,
+              })
+          }
           readPosition += identCharsCount
         } else {
           // 不明な文字
