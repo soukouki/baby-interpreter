@@ -51,14 +51,13 @@ module.exports.lexicalAnalyse = function (source) {
         tokens.push({ type: 'Comma' })
         readPosition += 1
         break
-      case ' ':
-      case '\t':
+      case ';':
+        tokens.push({ type: 'Semicolon' })
         readPosition += 1
         break
+      case ' ':
+      case '\t':
       case '\n':
-        tokens.push({
-          type: 'Newline',
-        })
         readPosition += 1
         break
       default:

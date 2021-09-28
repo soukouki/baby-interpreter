@@ -3,6 +3,9 @@
 const { lexicalAnalyse } = require('./lexical-analyse')
 
 describe('字句解析', () => {
+  test('空文字列', () => {
+    expect(lexicalAnalyse('')).toStrictEqual([])
+  })
   test('1', () => {
     expect(lexicalAnalyse('1')).toStrictEqual([{ type: 'Int', value: 1 }])
   })
@@ -18,15 +21,12 @@ describe('字句解析', () => {
       { type: 'Plus' },
       { type: 'Int', value: 2 }])
   })
-  test('改行', () => {
-    expect(lexicalAnalyse('1\n2')).toStrictEqual([
-      { type: 'Int', value: 1 },
-      { type: 'Newline' },
-      { type: 'Int', value: 2 }])
-  })
   test('空白は無視する', () => {
     expect(lexicalAnalyse('\t 1 ')).toStrictEqual([{ type: 'Int', value: 1 }])
     expect(lexicalAnalyse('     ')).toStrictEqual([])
+    expect(lexicalAnalyse('1\n2')).toStrictEqual([
+      { type: 'Int', value: 1 },
+      { type: 'Int', value: 2 }])
   })
   test('無効な文字列', () => {
     expect(lexicalAnalyse('あ')).toStrictEqual([{ type: 'UnknownCharacter', value: 'あ' }])
@@ -45,5 +45,8 @@ describe('字句解析', () => {
   })
   test('コンマ', () => {
     expect(lexicalAnalyse(',')).toStrictEqual([{ type: 'Comma' }])
+  })
+  test('セミコロン', () => {
+    expect(lexicalAnalyse(';')).toStrictEqual([{ type: 'Semicolon' }])
   })
 })
