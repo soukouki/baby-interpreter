@@ -120,17 +120,23 @@ function parseExpression(tokens) {
   return parseAddSubExpression(tokens)
 }
 
+function parseStatement(tokens) {
+  const { expression, parsedTokensCount } = parseExpression(tokens)
+  if (expression && tokens[parsedTokensCount]?.type === 'Semicolon') {
+    return {
+      expression,
+      parsedTokensCount,
+    }
+  }
+  return { expression: null }
+}
+
 function parseSource(tokens) {
   const statements = []
   let readPosition = 0
   while (readPosition < tokens.length) {
-    if (tokens[readPosition].type === 'Semicolon') {
-      readPosition += 1
-      // eslint-disable-next-line no-continue
-      continue
-    }
-    const { expression, parsedTokensCount } = parseExpression(tokens.slice(readPosition))
-    if (expression && tokens[readPosition + parsedTokensCount]?.type === 'Semicolon') {
+    const { expression, parsedTokensCount } = parseStatement(tokens.slice(readPosition))
+    if (expression) {
       statements.push(expression)
       readPosition += parsedTokensCount + 1
     } else {

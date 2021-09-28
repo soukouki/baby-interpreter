@@ -60,6 +60,9 @@ describe('構文解析', () => {
         { type: 'Semicolon' },
       ]).type).toBe('SyntaxError')
     })
+    test('複数の文(空)', () => {
+      expect(parse([{ type: 'Semicolon' }]).type).toBe('SyntaxError')
+    })
   })
   const lex = lexicalAnalyse
   test('1+2+3;', () => {
@@ -88,14 +91,6 @@ describe('構文解析', () => {
           { type: 'IntLiteral', value: 1 },
           { type: 'IntLiteral', value: 2 },
         ],
-      },
-    )
-  })
-  test('複数の文(空)', () => {
-    expect(parse(lex(';;'))).toStrictEqual(
-      {
-        type: 'Source',
-        statements: [],
       },
     )
   })
