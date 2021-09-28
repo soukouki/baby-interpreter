@@ -94,6 +94,13 @@ module.exports.lexicalAnalyse = function (source) {
                 type: 'Def',
               })
               break
+            case 'true':
+            case 'false':
+              tokens.push({
+                type: 'BoolLiteral',
+                value: name === 'true',
+              })
+              break
             default:
               tokens.push({
                 type: 'Ident',

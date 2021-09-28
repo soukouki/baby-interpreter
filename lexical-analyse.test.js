@@ -58,10 +58,16 @@ describe('字句解析', () => {
   test('セミコロン', () => {
     expect(lexicalAnalyse(';')).toStrictEqual([{ type: 'Semicolon' }])
   })
-  test('キーワード', () => {
+  describe('キーワード', () => {
     expect(lexicalAnalyse('if def')).toStrictEqual([
       { type: 'If' },
       { type: 'Def' },
     ])
+    test('真偽値', () => {
+      expect(lexicalAnalyse('true false')).toStrictEqual([
+        { type: 'BoolLiteral', value: true },
+        { type: 'BoolLiteral', value: false },
+      ])
+    })
   })
 })
