@@ -113,34 +113,50 @@ describe('評価', () => {
       },
     )
   })
-  test('変数の参照', () => {
-    expect(evaluate(lexAndParse('value;'), {
-      variables: new Map([
-        ['value', {
-          type: 'IntValue',
-          isError: false,
-          value: 123,
-        }],
-      ]),
-      functions: new Map(),
-    })).toStrictEqual(
-      {
-        result: {
-          type: 'IntValue',
-          isError: false,
-          value: 123,
+  describe('変数の参照', () => {
+    test('正常な参照', () => {
+      expect(evaluate(lexAndParse('value;'), {
+        variables: new Map([
+          ['value', {
+            type: 'IntValue',
+            isError: false,
+            value: 123,
+          }],
+        ]),
+        functions: new Map(),
+      })).toStrictEqual(
+        {
+          result: {
+            type: 'IntValue',
+            isError: false,
+            value: 123,
+          },
+          environment: {
+            variables: new Map([
+              ['value', {
+                type: 'IntValue',
+                isError: false,
+                value: 123,
+              }],
+            ]),
+            functions: new Map(),
+          },
         },
-        environment: {
-          variables: new Map([
-            ['value', {
-              type: 'IntValue',
-              isError: false,
-              value: 123,
-            }],
-          ]),
-          functions: new Map(),
+      )
+    })
+    test('存在しない参照', () => {
+      expect(evaluate(lexAndParse('non;'), emptyEnvironment)).toStrictEqual(
+        {
+          result: {
+            type: 'Null',
+            isError: false,
+          },
+          environment: {
+            variables: new Map(),
+            functions: new Map(),
+          },
         },
-      },
-    )
+      )
+    })
   })
 })

@@ -77,7 +77,7 @@ function evaluate(ast, environment) {
       return {
         result: nullValue,
         environment: {
-          variables: environment.variables.set(
+          variables: new Map(environment.variables).set(
             ast.name,
             evaluate(ast.expression, environment).result,
           ),
@@ -88,7 +88,7 @@ function evaluate(ast, environment) {
       return evaluateAdd(ast, environment)
     case 'Variable':
       return {
-        result: environment.variables.get(ast.name),
+        result: environment.variables.get(ast.name) || nullValue,
         environment,
       }
     case 'IntLiteral':
