@@ -10,6 +10,23 @@ function lexAndParse(source) {
 }
 
 describe('評価', () => {
+  describe('エラー処理', () => {
+    test('不明なAST', () => {
+      expect(evaluate({
+        type: 'Source',
+        statements: [{ type: 'UnknownAST' }],
+      }, {
+        variables: new Map(),
+        functions: new Map(),
+      }).result.type).toBe('EnvironmentError')
+    })
+    test('型エラー', () => {
+      expect(evaluate(lexAndParse('a+1;'), {
+        variables: new Map([['a', { type: 'NullValue' }]]),
+        functions: new Map(),
+      }).result.type).toBe('TypeError')
+    })
+  })
   test('1;', () => {
     expect(evaluate({
       type: 'Source',
