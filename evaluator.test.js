@@ -61,4 +61,19 @@ describe('評価', () => {
       },
     )
   })
+  test('複数の文', () => {
+    expect(evaluate(lexAndParse('1;2;'), emptyEnvironment)).toStrictEqual(
+      {
+        result: {
+          type: 'IntValue',
+          isError: false,
+          value: 2,
+        },
+        environment: {
+          variables: new Map(),
+          functions: new Map(),
+        },
+      },
+    )
+  })
 })
