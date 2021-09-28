@@ -96,4 +96,34 @@ describe('評価', () => {
       },
     )
   })
+  test('変数の参照', () => {
+    expect(evaluate(lexAndParse('value;'), {
+      variables: new Map([
+        ['value', {
+          type: 'IntValue',
+          isError: false,
+          value: 123,
+        }],
+      ]),
+      functions: new Map(),
+    })).toStrictEqual(
+      {
+        result: {
+          type: 'IntValue',
+          isError: false,
+          value: 123,
+        },
+        environment: {
+          variables: new Map([
+            ['value', {
+              type: 'IntValue',
+              isError: false,
+              value: 123,
+            }],
+          ]),
+          functions: new Map(),
+        },
+      },
+    )
+  })
 })

@@ -86,6 +86,11 @@ function evaluate(ast, environment) {
       }
     case 'Add':
       return evaluateAdd(ast, environment)
+    case 'Variable':
+      return {
+        result: environment.variables.get(ast.name),
+        environment,
+      }
     case 'IntLiteral':
       return {
         result: intValue(ast.value),
