@@ -65,8 +65,8 @@ describe('字句解析', () => {
     ])
     test('真偽値', () => {
       expect(lexicalAnalyse('true false')).toStrictEqual([
-        { type: 'BoolLiteral', value: true },
-        { type: 'BoolLiteral', value: false },
+        { type: 'Bool', value: true },
+        { type: 'Bool', value: false },
       ])
     })
   })

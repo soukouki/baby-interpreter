@@ -213,22 +213,43 @@ describe('構文解析', () => {
       )
     })
   })
-  test('代入文', () => {
-    expect(parse(lex('two=1+1;'))).toStrictEqual(
-      {
-        type: 'Source',
-        statements: [
-          {
-            type: 'Assignment',
-            name: 'two',
-            expression: {
-              type: 'Add',
-              left: { type: 'IntLiteral', value: 1 },
-              right: { type: 'IntLiteral', value: 1 },
+  describe('代入文', () => {
+    test('基本の形', () => {
+      expect(parse(lex('two=1+1;'))).toStrictEqual(
+        {
+          type: 'Source',
+          statements: [
+            {
+              type: 'Assignment',
+              name: 'two',
+              expression: {
+                type: 'Add',
+                left: { type: 'IntLiteral', value: 1 },
+                right: { type: 'IntLiteral', value: 1 },
+              },
             },
-          },
-        ],
-      },
-    )
+          ],
+        },
+      )
+    })
+    test('セミコロンの確認', () => {
+      expect(parse(lex('two=1+1')).type).toBe('SyntaxError')
+    })
+  })
+  describe('if', () => {
+    test('文が1つ', () => {
+      expect(parse(lex('if(true) { 1; }'))).toStrictEqual(
+        {
+          type: 'Source',
+          statements: [
+            {
+              type: 'If',
+              condition: { type: 'BoolLiteral', value: true },
+              statements: [{ type: 'IntLiteral', value: 1 }],
+            },
+          ],
+        },
+      )
+    })
   })
 })

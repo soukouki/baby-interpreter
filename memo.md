@@ -28,11 +28,11 @@
 ```ebnf
 source = { stmt | def_func }
 
-stmts = { stmt }
 stmt = ( expr　";" | assign ";" | if )
 assign = identifier "=" expr
-if = "if" "(" expr ")" "{" stmts "}" [ "else" "{" stmts "}" ]
-def_func = "def" identifier "(" comma_separated_exprs ")" "{" stmts "}"
+if = "if" "(" expr ")" block
+def_func = "def" identifier "(" comma_separated_exprs ")" block
+block = "{" { stmt } "}"
 
 expr = add_sub_expr
 add_sub_expr = func_call_expr , { "+" , func_call_expr }

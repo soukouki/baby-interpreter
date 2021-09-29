@@ -9,6 +9,14 @@ function parseLiteral(tokens) {
         },
         parsedTokensCount: 1,
       }
+    case 'Bool':
+      return {
+        expression: {
+          type: 'BoolLiteral',
+          value: head.value,
+        },
+        parsedTokensCount: 1,
+      }
     default:
       return {
         expression: null,
@@ -120,13 +128,67 @@ function parseExpression(tokens) {
   return parseAddSubExpression(tokens)
 }
 
+function parseBlock(tokens) {
+  if (tokens[0]?.type !== 'LBrace') {
+    return { statements: null }
+  }
+  const statements = []
+  let readPosition = 1
+  while (tokens[readPosition].type !== 'RBrace') {
+    const {
+      statement: stmt,
+      parsedTokensCount,
+    // eslint-disable-next-line no-use-before-define
+    } = parseStatement(tokens.slice(readPosition))
+    if (stmt === null) {
+      return { statements: null }
+    }
+    statements.push(stmt)
+    readPosition += parsedTokensCount
+  }
+  return {
+    statements,
+    parsedTokensCount: readPosition + 2,
+  }
+}
+
+function parseIfStatement(tokens) {
+  if (tokens[0]?.type !== 'If' || tokens[1]?.type !== 'LParen') {
+    return { ifStatement: null }
+  }
+  const {
+    expression: condition,
+    parsedTokensCount: parsedExpressionTokensCount,
+  } = parseExpression(tokens.slice(2))
+  if (
+    !condition
+    || tokens[parsedExpressionTokensCount + 2]?.type !== 'RParen') {
+    return { ifStatement: null }
+  }
+  const {
+    statements,
+    parsedTokensCount: parsedBlockTokensCount,
+  } = parseBlock(tokens.slice(parsedExpressionTokensCount + 3))
+  if (!statements) {
+    return { ifStatement: null }
+  }
+  return {
+    ifStatement: {
+      type: 'If',
+      condition,
+      statements,
+    },
+    parsedTokensCount: parsedExpressionTokensCount + parsedBlockTokensCount + 3,
+  }
+}
+
 function parseAssignment(tokens) {
   if (tokens[0]?.type !== 'Ident' || tokens[1]?.type !== 'Equal') {
-    return { result: null }
+    return { assignment: null }
   }
   const { expression, parsedTokensCount } = parseExpression(tokens.slice(2))
   if (!expression) {
-    return { result: null }
+    return { assignment: null }
   }
   return {
     assignment: {
@@ -147,10 +209,17 @@ function parseStatement(tokens) {
     }
   }
   const { assignment, parsedTokensCount: parsedAssignmentTokensCount } = parseAssignment(tokens)
-  if (assignment) {
+  if (assignment && tokens[parsedAssignmentTokensCount]?.type === 'Semicolon') {
     return {
       statement: assignment,
       parsedTokensCount: parsedAssignmentTokensCount + 1,
+    }
+  }
+  const { ifStatement, parsedTokensCount: parsedIfTokensCount } = parseIfStatement(tokens)
+  if (ifStatement) {
+    return {
+      statement: ifStatement,
+      parsedTokensCount: parsedIfTokensCount,
     }
   }
   return { expression: null }
