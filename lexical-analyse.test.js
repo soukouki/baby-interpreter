@@ -69,5 +69,8 @@ describe('字句解析', () => {
         { type: 'Bool', value: false },
       ])
     })
+    test('null', () => {
+      expect(lexicalAnalyse('null')).toStrictEqual([{ type: 'Null' }])
+    })
   })
 })

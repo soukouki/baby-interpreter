@@ -100,6 +100,42 @@ describe('構文解析', () => {
       },
     )
   })
+  describe('各種リテラル', () => {
+    test('整数', () => {
+      expect(parse(lex('123;'))).toStrictEqual(
+        {
+          type: 'Source',
+          statements: [{ type: 'IntLiteral', value: 123 }],
+        },
+      )
+    })
+    describe('真偽値', () => {
+      test('true', () => {
+        expect(parse(lex('true;'))).toStrictEqual(
+          {
+            type: 'Source',
+            statements: [{ type: 'BoolLiteral', value: true }],
+          },
+        )
+      })
+      test('false', () => {
+        expect(parse(lex('false;'))).toStrictEqual(
+          {
+            type: 'Source',
+            statements: [{ type: 'BoolLiteral', value: false }],
+          },
+        )
+      })
+    })
+    test('null', () => {
+      expect(parse(lex('null;'))).toStrictEqual(
+        {
+          type: 'Source',
+          statements: [{ type: 'NullLiteral' }],
+        },
+      )
+    })
+  })
   test('変数', () => {
     expect(parse(lex('abc;'))).toStrictEqual(
       {

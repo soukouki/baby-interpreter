@@ -17,6 +17,13 @@ function parseLiteral(tokens) {
         },
         parsedTokensCount: 1,
       }
+    case 'Null':
+      return {
+        expression: {
+          type: 'NullLiteral',
+        },
+        parsedTokensCount: 1,
+      }
     default:
       return {
         expression: null,

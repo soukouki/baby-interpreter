@@ -101,6 +101,11 @@ module.exports.lexicalAnalyse = function (source) {
                 value: name === 'true',
               })
               break
+            case 'null':
+              tokens.push({
+                type: 'Null',
+              })
+              break
             default:
               tokens.push({
                 type: 'Ident',
