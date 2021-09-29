@@ -212,6 +212,9 @@ describe('構文解析', () => {
         },
       )
     })
+    test('引数の構文解析に失敗', () => {
+      expect(parse(lex('func(+);')).type).toBe('SyntaxError')
+    })
   })
   describe('代入文', () => {
     test('基本の形', () => {
@@ -251,8 +254,17 @@ describe('構文解析', () => {
         },
       )
     })
-    test('文の読み取りに失敗', () => {
+    test('丸括弧が閉じず失敗', () => {
+      expect(parse(lex('if(1')).type).toBe('SyntaxError')
+    })
+    test('ブロックの構文解析に失敗', () => {
       expect(parse(lex('if(true) { 1+1 }')).type).toBe('SyntaxError')
+    })
+    test('ブロックがなくて失敗', () => {
+      expect(parse(lex('if(false)')).type).toBe('SyntaxError')
+    })
+    test('ブロックが閉じず失敗', () => {
+      expect(parse(lex('if(false){')).type).toBe('SyntaxError')
     })
   })
 })

@@ -225,7 +225,7 @@ function parseStatement(tokens) {
       parsedTokensCount: parsedIfTokensCount,
     }
   }
-  return { expression: null }
+  return { statement: null }
 }
 
 function parseSource(tokens) {
