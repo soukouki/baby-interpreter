@@ -279,7 +279,21 @@ describe('構文解析', () => {
     })
   })
   describe('if', () => {
-    test('文が1つ', () => {
+    test('文が0個', () => {
+      expect(parse(lex('if(true) { }'))).toStrictEqual(
+        {
+          type: 'Source',
+          statements: [
+            {
+              type: 'If',
+              condition: { type: 'BoolLiteral', value: true },
+              statements: [],
+            },
+          ],
+        },
+      )
+    })
+    test('文が1個', () => {
       expect(parse(lex('if(true) { 1; }'))).toStrictEqual(
         {
           type: 'Source',
@@ -288,6 +302,23 @@ describe('構文解析', () => {
               type: 'If',
               condition: { type: 'BoolLiteral', value: true },
               statements: [{ type: 'IntLiteral', value: 1 }],
+            },
+          ],
+        },
+      )
+    })
+    test('文が2個', () => {
+      expect(parse(lex('if(true) { 1; 2; }'))).toStrictEqual(
+        {
+          type: 'Source',
+          statements: [
+            {
+              type: 'If',
+              condition: { type: 'BoolLiteral', value: true },
+              statements: [
+                { type: 'IntLiteral', value: 1 },
+                { type: 'IntLiteral', value: 2 },
+              ],
             },
           ],
         },

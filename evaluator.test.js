@@ -241,5 +241,23 @@ describe('評価', () => {
         environment: emptyEnvironment,
       })
     })
+    test('文が0個', () => {
+      expect(evaluate(lexAndParse('if(true){}'), emptyEnvironment)).toStrictEqual({
+        result: nullValue,
+        environment: emptyEnvironment,
+      })
+    })
+    test('文が1個', () => {
+      expect(evaluate(lexAndParse('if(true){ 1; }'), emptyEnvironment)).toStrictEqual({
+        result: intValue(1),
+        environment: emptyEnvironment,
+      })
+    })
+    test('文が2個', () => {
+      expect(evaluate(lexAndParse('if(true){ 2; 3; }'), emptyEnvironment)).toStrictEqual({
+        result: intValue(3),
+        environment: emptyEnvironment,
+      })
+    })
   })
 })
