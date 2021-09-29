@@ -3,7 +3,7 @@
 const { evaluate } = require('./evaluator')
 const { parse } = require('./parser')
 const { lexicalAnalyse } = require('./lexical-analyse')
-const { emptyEnvironment } = require('./value')
+const { emptyEnvironment, nullValue, intValue } = require('./value')
 
 function lexAndParse(source) {
   return parse(lexicalAnalyse(source))
@@ -204,6 +204,42 @@ describe('評価', () => {
           environment: emptyEnvironment,
         },
       )
+    })
+  })
+  describe('if', () => {
+    test('trueのとき', () => {
+      expect(evaluate(lexAndParse('if(true){a=1;}'), emptyEnvironment)).toStrictEqual({
+        result: nullValue,
+        environment: {
+          variables: new Map([
+            ['a', intValue(1)],
+          ]),
+          functions: new Map(),
+        },
+      })
+    })
+    test('falseのとき', () => {
+      expect(evaluate(lexAndParse('if(false){a=1;}'), emptyEnvironment)).toStrictEqual({
+        result: nullValue,
+        environment: emptyEnvironment,
+      })
+    })
+    test('intのとき', () => {
+      expect(evaluate(lexAndParse('if(123){a=1;}'), emptyEnvironment)).toStrictEqual({
+        result: nullValue,
+        environment: {
+          variables: new Map([
+            ['a', intValue(1)],
+          ]),
+          functions: new Map(),
+        },
+      })
+    })
+    test('nullのとき', () => {
+      expect(evaluate(lexAndParse('if(null){a=1;}'), emptyEnvironment)).toStrictEqual({
+        result: nullValue,
+        environment: emptyEnvironment,
+      })
     })
   })
 })
