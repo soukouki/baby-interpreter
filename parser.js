@@ -134,7 +134,10 @@ function parseBlock(tokens) {
   }
   const statements = []
   let readPosition = 1
-  while (tokens[readPosition].type !== 'RBrace') {
+  while (tokens[readPosition]?.type !== 'RBrace') {
+    if (tokens[readPosition] === undefined) {
+      return { statements: null }
+    }
     const {
       statement: stmt,
       parsedTokensCount,

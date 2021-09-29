@@ -251,5 +251,8 @@ describe('構文解析', () => {
         },
       )
     })
+    test('文の読み取りに失敗', () => {
+      expect(parse(lex('if(true) { 1+1 }')).type).toBe('SyntaxError')
+    })
   })
 })
