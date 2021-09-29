@@ -1,11 +1,19 @@
 exports.nullValue = {
-  type: 'Null',
+  type: 'NullValue',
   isError: false,
 }
 
 exports.intValue = function (value) {
   return {
     type: 'IntValue',
+    isError: false,
+    value,
+  }
+}
+
+exports.boolBalue = function (value) {
+  return {
+    type: 'BoolValue',
     isError: false,
     value,
   }

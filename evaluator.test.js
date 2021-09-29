@@ -49,19 +49,6 @@ describe('評価', () => {
         },
       },
     )
-    expect(evaluate(lexAndParse('123;'), emptyEnvironment)).toStrictEqual(
-      {
-        result: {
-          type: 'IntValue',
-          isError: false,
-          value: 123,
-        },
-        environment: {
-          variables: new Map(),
-          functions: new Map(),
-        },
-      },
-    )
   })
   describe('Add', () => {
     test('1+2;', () => {
@@ -103,7 +90,7 @@ describe('評価', () => {
     expect(evaluate(lexAndParse('a=1;'), emptyEnvironment)).toStrictEqual(
       {
         result: {
-          type: 'Null',
+          type: 'NullValue',
           isError: false,
         },
         environment: {
@@ -154,13 +141,67 @@ describe('評価', () => {
       expect(evaluate(lexAndParse('non;'), emptyEnvironment)).toStrictEqual(
         {
           result: {
-            type: 'Null',
+            type: 'NullValue',
             isError: false,
           },
           environment: {
             variables: new Map(),
             functions: new Map(),
           },
+        },
+      )
+    })
+  })
+  describe('各種リテラル', () => {
+    test('整数', () => {
+      expect(evaluate(lexAndParse('123;'), emptyEnvironment)).toStrictEqual(
+        {
+          result: {
+            type: 'IntValue',
+            isError: false,
+            value: 123,
+          },
+          environment: {
+            variables: new Map(),
+            functions: new Map(),
+          },
+        },
+      )
+    })
+    describe('真偽値', () => {
+      test('true', () => {
+        expect(evaluate(lexAndParse('true;'), emptyEnvironment)).toStrictEqual(
+          {
+            result: {
+              type: 'BoolValue',
+              isError: false,
+              value: true,
+            },
+            environment: emptyEnvironment,
+          },
+        )
+      })
+      test('false', () => {
+        expect(evaluate(lexAndParse('false;'), emptyEnvironment)).toStrictEqual(
+          {
+            result: {
+              type: 'BoolValue',
+              isError: false,
+              value: false,
+            },
+            environment: emptyEnvironment,
+          },
+        )
+      })
+    })
+    test('null', () => {
+      expect(evaluate(lexAndParse('null;'), emptyEnvironment)).toStrictEqual(
+        {
+          result: {
+            type: 'NullValue',
+            isError: false,
+          },
+          environment: emptyEnvironment,
         },
       )
     })

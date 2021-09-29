@@ -1,4 +1,4 @@
-const { intValue, nullValue } = require('./value')
+const { intValue, nullValue, boolBalue } = require('./value')
 
 function evaluaterError(type, environment) {
   return {
@@ -94,6 +94,16 @@ function evaluate(ast, environment) {
     case 'IntLiteral':
       return {
         result: intValue(ast.value),
+        environment,
+      }
+    case 'BoolLiteral':
+      return {
+        result: boolBalue(ast.value),
+        environment,
+      }
+    case 'NullLiteral':
+      return {
+        result: nullValue,
         environment,
       }
     default:
