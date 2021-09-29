@@ -18,7 +18,7 @@ describe('評価', () => {
       }, {
         variables: new Map(),
         functions: new Map(),
-      }).result.type).toBe('EnvironmentError')
+      }).result.type).toBe('EvaluatorError')
     })
     test('型エラー', () => {
       expect(evaluate(lexAndParse('a+1;'), {
@@ -63,20 +63,26 @@ describe('評価', () => {
       },
     )
   })
-  test('1+2;', () => {
-    expect(evaluate(lexAndParse('1+2;'), emptyEnvironment)).toStrictEqual(
-      {
-        result: {
-          type: 'IntValue',
-          isError: false,
-          value: 3,
+  describe('Add', () => {
+    test('1+2;', () => {
+      expect(evaluate(lexAndParse('1+2;'), emptyEnvironment)).toStrictEqual(
+        {
+          result: {
+            type: 'IntValue',
+            isError: false,
+            value: 3,
+          },
+          environment: {
+            variables: new Map(),
+            functions: new Map(),
+          },
         },
-        environment: {
-          variables: new Map(),
-          functions: new Map(),
-        },
-      },
-    )
+      )
+    })
+    test('エラー時にエラーを上げていく処理', () => {
+      expect(evaluate(lexAndParse('(1+non)+23;'), emptyEnvironment).result.type).toBe('TypeError')
+      expect(evaluate(lexAndParse('1+(non+23);'), emptyEnvironment).result.type).toBe('TypeError')
+    })
   })
   test('複数の文', () => {
     expect(evaluate(lexAndParse('1;2;'), emptyEnvironment)).toStrictEqual(

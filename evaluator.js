@@ -1,9 +1,9 @@
 const { intValue, nullValue } = require('./value')
 
-function environmentError(type, environment) {
+function evaluaterError(type, environment) {
   return {
     result: {
-      type: 'EnvironmentError',
+      type: 'EvaluatorError',
       isError: true,
       message: `無効なast\`${type}\`が渡されました`,
     },
@@ -32,7 +32,7 @@ function evaluateStatements(ast, environment) {
     // eslint-disable-next-line no-use-before-define
     const evalResult = evaluate(stmt, env)
     if (evalResult === null) {
-      return environmentError(stmt, env)
+      return evaluaterError(stmt, env)
     }
     result = evalResult.result
     env = evalResult.environment
@@ -97,7 +97,7 @@ function evaluate(ast, environment) {
         environment,
       }
     default:
-      return environmentError(ast.type, environment)
+      return evaluaterError(ast.type, environment)
   }
 }
 
