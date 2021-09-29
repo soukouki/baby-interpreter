@@ -238,6 +238,9 @@ describe('構文解析', () => {
     test('セミコロンの確認', () => {
       expect(parse(lex('two=1+1')).type).toBe('SyntaxError')
     })
+    test('式の構文解析に失敗', () => {
+      expect(parse(lex('a=;')).type).toBe('SyntaxError')
+    })
   })
   describe('if', () => {
     test('文が1つ', () => {

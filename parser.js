@@ -74,7 +74,7 @@ function parseFunctionCallArguments(tokens) {
     // eslint-disable-next-line no-use-before-define
     const { expression, parsedTokensCount } = parseExpression(tokens.slice(readPosition))
     if (expression === null) {
-      break
+      return null
     }
     args.push(expression)
     readPosition += parsedTokensCount
@@ -239,8 +239,6 @@ function parseSource(tokens) {
     if (stmt && stmt?.type !== 'SyntaxError') {
       statements.push(stmt)
       readPosition += parsedExpressionTokensCount
-    } else if (stmt && stmt?.type === 'SyntaxError') {
-      return stmt
     } else {
       return {
         type: 'SyntaxError',
