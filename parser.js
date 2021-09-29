@@ -56,22 +56,16 @@ function parseParenthesisExpression(tokens) {
   return parseValue(tokens)
 }
 
-function parseFunctionCallArguments(tokens) {
+function parseCommaSeparatedExpressions(tokens) {
   const {
     expression: firstExpression,
     parsedTokensCount: firstParsedTokensCount,
   // eslint-disable-next-line no-use-before-define
   } = parseExpression(tokens)
-  if (firstExpression === null && tokens[0]?.type === 'RParen') {
+  if (firstExpression === null) {
     return {
       args: [],
       parsedTokensCount: 0,
-    }
-  }
-  if (tokens[firstParsedTokensCount]?.type === 'RParen') {
-    return {
-      args: [firstExpression],
-      parsedTokensCount: firstParsedTokensCount,
     }
   }
   const args = [firstExpression]
@@ -85,14 +79,11 @@ function parseFunctionCallArguments(tokens) {
     }
     args.push(expression)
     readPosition += parsedTokensCount
-    if (tokens[readPosition]?.type === 'RParen') {
-      return {
-        args,
-        parsedTokensCount: readPosition,
-      }
-    }
   }
-  return null
+  return {
+    args,
+    parsedTokensCount: readPosition,
+  }
 }
 
 function parseFunctionCallExpression(tokens) {
@@ -100,11 +91,14 @@ function parseFunctionCallExpression(tokens) {
   if (name?.type !== 'Ident' || tokens[1]?.type !== 'LParen') {
     return parseParenthesisExpression(tokens)
   }
-  const argsAndParsedTokensCount = parseFunctionCallArguments(tokens.slice(2))
+  const argsAndParsedTokensCount = parseCommaSeparatedExpressions(tokens.slice(2))
   if (argsAndParsedTokensCount === null) {
     return parseParenthesisExpression(tokens)
   }
   const { args, parsedTokensCount } = argsAndParsedTokensCount
+  if (tokens[parsedTokensCount + 2]?.type !== 'RParen') {
+    return parseParenthesisExpression(tokens)
+  }
   return {
     expression: {
       type: 'FuncCall',
@@ -235,6 +229,62 @@ function parseStatement(tokens) {
   return { statement: null }
 }
 
+function parseCommaSeparatedIdentfiers(tokens) {
+  const head = tokens[0]
+  if (head?.type !== 'Ident') {
+    return {
+      names: [],
+      parsedTokensCount: 0,
+    }
+  }
+  const names = [head.value]
+  let readPosition = 1
+  while (tokens[readPosition]?.type === 'Comma') {
+    readPosition += 1
+    // eslint-disable-next-line no-use-before-define
+    const next = tokens[readPosition]
+    if (next.type !== 'Ident') {
+      break
+    }
+    names.push(next.value)
+    readPosition += 1
+  }
+  return {
+    names,
+    parsedTokensCount: readPosition,
+  }
+}
+
+function parseDefineFunction(tokens) {
+  if (tokens[0]?.type !== 'Def' || tokens[1]?.type !== 'Ident' || tokens[2]?.type !== 'LParen') {
+    return { define: null }
+  }
+  const { value: name } = tokens[1]
+  const {
+    names: args,
+    parsedTokensCount: parsedArgumentTokensCount,
+  } = parseCommaSeparatedIdentfiers(tokens.slice(3))
+  if (tokens[parsedArgumentTokensCount + 3]?.type !== 'RParen') {
+    return { define: null }
+  }
+  const {
+    statements,
+    parsedTokensCount: parsedBlockTokensCount,
+  } = parseBlock(tokens.slice(parsedArgumentTokensCount + 4))
+  if (!statements) {
+    return { define: null }
+  }
+  return {
+    defineFunction: {
+      type: 'FuncDef',
+      name,
+      arguments: args,
+      statements,
+    },
+    parsedTokensCount: parsedArgumentTokensCount + parsedBlockTokensCount + 4,
+  }
+}
+
 function parseSource(tokens) {
   const statements = []
   let readPosition = 0
@@ -243,14 +293,26 @@ function parseSource(tokens) {
       statement: stmt,
       parsedTokensCount: parsedExpressionTokensCount,
     } = parseStatement(tokens.slice(readPosition))
-    if (stmt && stmt?.type !== 'SyntaxError') {
+    if (stmt) {
       statements.push(stmt)
       readPosition += parsedExpressionTokensCount
-    } else {
-      return {
-        type: 'SyntaxError',
-        message: `予期しないトークン\`${tokens[readPosition]?.type}\`, \`${tokens[readPosition + 1]?.type}\`が渡されました`,
-      }
+      // eslint-disable-next-line no-continue
+      continue
+    }
+    const {
+      defineFunction,
+      parsedTokensCount: parsedDefineFunctionTokensCount,
+    } = parseDefineFunction(tokens.slice(readPosition))
+    if (defineFunction) {
+      statements.push(defineFunction)
+      readPosition += parsedDefineFunctionTokensCount
+      // eslint-disable-next-line no-continue
+      continue
+    }
+    return {
+      type: 'SyntaxError',
+      message: `予期しないトークン\`${tokens[readPosition]?.type}\`が渡されました`,
+      headToken: tokens[readPosition],
     }
   }
   return {

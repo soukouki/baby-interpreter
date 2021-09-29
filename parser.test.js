@@ -337,4 +337,76 @@ describe('構文解析', () => {
       expect(parse(lex('if(false){')).type).toBe('SyntaxError')
     })
   })
+  describe('関数定義', () => {
+    test('引数が0個、文が0個', () => {
+      expect(parse(lex('def funcname() { }'))).toStrictEqual({
+        type: 'Source',
+        statements: [
+          {
+            type: 'FuncDef',
+            name: 'funcname',
+            arguments: [],
+            statements: [],
+          },
+        ],
+      })
+    })
+    test('引数が1個、文が0個', () => {
+      expect(parse(lex('def funcname(argument) { }'))).toStrictEqual({
+        type: 'Source',
+        statements: [
+          {
+            type: 'FuncDef',
+            name: 'funcname',
+            arguments: ['argument'],
+            statements: [],
+          },
+        ],
+      })
+    })
+    test('引数が2個、文が0個', () => {
+      expect(parse(lex('def funcname(xxx, yyy) { }'))).toStrictEqual({
+        type: 'Source',
+        statements: [
+          {
+            type: 'FuncDef',
+            name: 'funcname',
+            arguments: ['xxx', 'yyy'],
+            statements: [],
+          },
+        ],
+      })
+    })
+    test('引数が0個、文が1個', () => {
+      expect(parse(lex('def funcname() { 123; }'))).toStrictEqual({
+        type: 'Source',
+        statements: [
+          {
+            type: 'FuncDef',
+            name: 'funcname',
+            arguments: [],
+            statements: [
+              { type: 'IntLiteral', value: 123 },
+            ],
+          },
+        ],
+      })
+    })
+    test('引数が0個、文が2個', () => {
+      expect(parse(lex('def funcname() { 123; 456; }'))).toStrictEqual({
+        type: 'Source',
+        statements: [
+          {
+            type: 'FuncDef',
+            name: 'funcname',
+            arguments: [],
+            statements: [
+              { type: 'IntLiteral', value: 123 },
+              { type: 'IntLiteral', value: 456 },
+            ],
+          },
+        ],
+      })
+    })
+  })
 })
