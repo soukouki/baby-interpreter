@@ -324,17 +324,19 @@ describe('構文解析', () => {
         },
       )
     })
-    test('丸括弧が閉じず失敗', () => {
-      expect(parse(lex('if(1')).type).toBe('SyntaxError')
-    })
-    test('ブロックの構文解析に失敗', () => {
-      expect(parse(lex('if(true) { 1+1 }')).type).toBe('SyntaxError')
-    })
-    test('ブロックがなくて失敗', () => {
-      expect(parse(lex('if(false)')).type).toBe('SyntaxError')
-    })
-    test('ブロックが閉じず失敗', () => {
-      expect(parse(lex('if(false){')).type).toBe('SyntaxError')
+    describe('エラー処理', () => {
+      test('丸括弧が閉じず失敗', () => {
+        expect(parse(lex('if(1')).type).toBe('SyntaxError')
+      })
+      test('ブロックの構文解析に失敗', () => {
+        expect(parse(lex('if(true) { 1+1 }')).type).toBe('SyntaxError')
+      })
+      test('ブロックがなくて失敗', () => {
+        expect(parse(lex('if(false)')).type).toBe('SyntaxError')
+      })
+      test('ブロックが閉じず失敗', () => {
+        expect(parse(lex('if(false){')).type).toBe('SyntaxError')
+      })
     })
   })
   describe('関数定義', () => {
@@ -406,6 +408,21 @@ describe('構文解析', () => {
             ],
           },
         ],
+      })
+    })
+    describe('エラー処理', () => {
+      test('引数に違うトークン', () => {
+        expect(parse(lex('def name(123)')).type).toBe('SyntaxError')
+        expect(parse(lex('def name(abc, 123)')).type).toBe('SyntaxError')
+      })
+      test('引数の括弧が閉じない', () => {
+        expect(parse(lex('def name(')).type).toBe('SyntaxError')
+      })
+      test('ブロックの括弧が閉じない', () => {
+        expect(parse(lex('def name() {')).type).toBe('SyntaxError')
+      })
+      test('ブロックでエラー', () => {
+        expect(parse(lex('def name() { nonsemicolon }')).type).toBe('SyntaxError')
       })
     })
   })
