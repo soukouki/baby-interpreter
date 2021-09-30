@@ -261,6 +261,14 @@ describe('評価', () => {
         environment: emptyEnvironment,
       })
     })
+    describe('エラーが起きる計算の処理', () => {
+      test('条件分でエラー', () => {
+        expect(evaluate(lexAndParse('if(1+true){ }'), emptyEnvironment).result.type).toBe('TypeError')
+      })
+      test('実行部分でエラー', () => {
+        expect(evaluate(lexAndParse('if(true){ 1+true; 1234; }'), emptyEnvironment).result.type).toBe('TypeError')
+      })
+    })
   })
   describe('組み込み関数', () => {
     test('組み込み関数が呼べることの確認', () => {

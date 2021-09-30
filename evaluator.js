@@ -31,12 +31,12 @@ function evaluateStatements(statements, environment) {
   // eslint-disable-next-line no-restricted-syntax
   for (const stmt of statements) {
     // eslint-disable-next-line no-use-before-define
-    const evalResult = evaluate(stmt, env)
-    if (evalResult.isError) {
-      return evalResult
+    const { result: evaluatedResult, environment: evaluatedEnvironment } = evaluate(stmt, env)
+    if (evaluatedResult.isError) {
+      return { result: evaluatedResult, environment: evaluatedEnvironment }
     }
-    result = evalResult.result
-    env = evalResult.environment
+    result = evaluatedResult
+    env = evaluatedEnvironment
   }
   return { result, environment: env }
 }
@@ -44,11 +44,13 @@ function evaluateStatements(statements, environment) {
 function evaluateIfStatement(ast, initialEnvironment) {
   const { condition, statements } = ast
   // eslint-disable-next-line no-use-before-define
-  const evalResult = evaluate(condition, initialEnvironment)
-  if (evalResult.isError) {
-    return evalResult
+  const { result, environment: halfwayEnvironment } = evaluate(condition, initialEnvironment)
+  if (result.isError) {
+    return {
+      result,
+      environment: halfwayEnvironment,
+    }
   }
-  const { result, environment: halfwayEnvironment } = evalResult
   if ((result.type === 'BoolValue' && result.value === false) || result.type === 'NullValue') {
     return {
       result: nullValue,
