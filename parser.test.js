@@ -338,6 +338,22 @@ describe('構文解析', () => {
         expect(parse(lex('if(false){')).type).toBe('SyntaxError')
       })
     })
+    test('ifの後の式', () => {
+      expect(parse(lex('if(true){ } 123;'))).toStrictEqual({
+        type: 'Source',
+        statements: [
+          {
+            type: 'If',
+            condition: { type: 'BoolLiteral', value: true },
+            statements: [],
+          },
+          {
+            type: 'IntLiteral',
+            value: 123,
+          },
+        ],
+      })
+    })
   })
   describe('関数定義', () => {
     test('引数が0個、文が0個', () => {
