@@ -86,7 +86,7 @@ function parseCommaSeparatedExpressions(tokens) {
   }
 }
 
-function parseFunctionCallExpression(tokens) {
+function parseFunctionCallingExpression(tokens) {
   const name = tokens[0]
   if (name?.type !== 'Ident' || tokens[1]?.type !== 'LParen') {
     return parseParenthesisExpression(tokens)
@@ -110,12 +110,12 @@ function parseFunctionCallExpression(tokens) {
 }
 
 function parseAddSubExpression(tokens) {
-  let { expression: left, parsedTokensCount: readPosition } = parseFunctionCallExpression(tokens)
+  let { expression: left, parsedTokensCount: readPosition } = parseFunctionCallingExpression(tokens)
   while (tokens[readPosition]?.type === 'Plus') {
     const {
       expression: right,
       parsedTokensCount: rightTokensCount,
-    } = parseFunctionCallExpression(tokens.slice(readPosition + 1))
+    } = parseFunctionCallingExpression(tokens.slice(readPosition + 1))
     if (right === null) {
       return { expression: null }
     }
@@ -255,7 +255,7 @@ function parseCommaSeparatedIdentfiers(tokens) {
   }
 }
 
-function parseDefineFunction(tokens) {
+function parseFunctionDefinition(tokens) {
   if (tokens[0]?.type !== 'Def' || tokens[1]?.type !== 'Ident' || tokens[2]?.type !== 'LParen') {
     return { define: null }
   }
@@ -302,7 +302,7 @@ function parseSource(tokens) {
     const {
       defineFunction,
       parsedTokensCount: parsedDefineFunctionTokensCount,
-    } = parseDefineFunction(tokens.slice(readPosition))
+    } = parseFunctionDefinition(tokens.slice(readPosition))
     if (defineFunction) {
       statements.push(defineFunction)
       readPosition += parsedDefineFunctionTokensCount

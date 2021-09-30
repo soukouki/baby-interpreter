@@ -449,4 +449,66 @@ describe('評価', () => {
       expect(evaluate(lexAndParse('func(1+null);'), functionDefinedEnvironment).result.type).toBe('TypeError')
     })
   })
+  describe('関数定義', () => {
+    test('定義ができることの確認', () => {
+      expect(evaluate(lexAndParse('def func() { 123; }'), emptyEnvironment)).toStrictEqual(
+        {
+          result: nullValue,
+          environment: {
+            variables: new Map(),
+            functions: new Map([
+              ['func', {
+                type: 'DefinedFunction',
+                argumentsCount: 0,
+                arguments: [],
+                statements: [{ type: 'IntLiteral', value: 123 }],
+              }],
+            ]),
+          },
+        },
+      )
+    })
+    test('引数を付けて定義ができることの確認', () => {
+      expect(evaluate(lexAndParse('def func(abc) { abc; }'), emptyEnvironment)).toStrictEqual(
+        {
+          result: nullValue,
+          environment: {
+            variables: new Map(),
+            functions: new Map([
+              ['func', {
+                type: 'DefinedFunction',
+                argumentsCount: 1,
+                arguments: ['abc'],
+                statements: [{ type: 'Variable', name: 'abc' }],
+              }],
+            ]),
+          },
+        },
+      )
+    })
+    test('すでに定義されている関数を上書き', () => {
+      const functionDefinedEnvironment = {
+        variables: new Map(),
+        functions: new Map([['func', { type: 'DummyFunction' }]]),
+      }
+      expect(evaluate(lexAndParse('def func() { 123; }'), functionDefinedEnvironment)).toStrictEqual(
+        {
+          result: nullValue,
+          environment: {
+            variables: new Map(),
+            functions: new Map([
+              ['func', {
+                type: 'DefinedFunction',
+                argumentsCount: 0,
+                arguments: [],
+                statements: [{ type: 'IntLiteral', value: 123 }],
+              }],
+            ]),
+          },
+        },
+      )
+    })
+  })
+  test('フィボナッチ', () => {
+  })
 })

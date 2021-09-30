@@ -171,10 +171,30 @@ function evaluateFunctionCalling(calling, environment) {
   }
 }
 
+function evaluateFunctionDefinition(ast, environment) {
+  return {
+    result: nullValue,
+    environment: {
+      variables: environment.variables,
+      functions: new Map(environment.variables).set(
+        ast.name,
+        {
+          type: 'DefinedFunction',
+          argumentsCount: ast.arguments.length,
+          arguments: ast.arguments,
+          statements: ast.statements,
+        },
+      ),
+    },
+  }
+}
+
 function evaluate(ast, environment) {
   switch (ast.type) {
     case 'Source':
       return evaluateStatements(ast.statements, environment)
+    case 'FuncDef':
+      return evaluateFunctionDefinition(ast, environment)
     case 'Assignment':
       return {
         result: nullValue,
