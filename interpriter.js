@@ -2,7 +2,6 @@
 /* eslint-disable no-console */
 
 const prompts = require('prompts')
-const { emptyEnvironment } = require('./value')
 const { lexicalAnalyse } = require('./lexical-analyse')
 const { parse } = require('./parser')
 const { evaluate } = require('./evaluator')
@@ -17,7 +16,16 @@ async function read() {
 }
 
 (async () => {
-  let environment = emptyEnvironment
+  let environment = {
+    variables: new Map(),
+    functions: new Map([
+      ['print', {
+        type: 'EmbededFunction',
+        argumentsCount: 1,
+        function: console.log,
+      }],
+    ]),
+  }
   for (;;) {
     // eslint-disable-next-line no-await-in-loop
     const tokens = lexicalAnalyse(await read())
