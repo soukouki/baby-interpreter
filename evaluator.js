@@ -31,8 +31,8 @@ function evaluateStatements(statements, environment) {
   for (const stmt of statements) {
     // eslint-disable-next-line no-use-before-define
     const evalResult = evaluate(stmt, env)
-    if (evalResult === null) {
-      return evaluaterError(stmt, env)
+    if (evalResult.isError) {
+      return evalResult
     }
     result = evalResult.result
     env = evalResult.environment
@@ -44,8 +44,8 @@ function evaluateIfStatement(ast, initialEnvironment) {
   const { condition, statements } = ast
   // eslint-disable-next-line no-use-before-define
   const evalResult = evaluate(condition, initialEnvironment)
-  if (evalResult === null) {
-    return evaluaterError(condition, initialEnvironment)
+  if (evalResult.isError) {
+    return evalResult
   }
   const { result, environment: halfwayEnvironment } = evalResult
   if ((result.type === 'BoolValue' && result.value === false) || result.type === 'NullValue') {
@@ -87,6 +87,23 @@ function evaluateAdd(ast, environment) {
   }
 }
 
+function evaluateFunctionCalling(calling, environment) {
+  const func = environment.functions.get(calling.name)
+  if (func === undefined) {
+    return {
+      result: {
+        type: 'UndefinedFunctionError',
+        isError: true,
+        message: `関数\`${calling.name}\`は存在しません`,
+      },
+    }
+  }
+  if (func.type !== 'EmbededFunction') {
+    return evaluaterError(calling, environment)
+  }
+  if (func.argumentsCount !== calling) {}
+}
+
 function evaluate(ast, environment) {
   switch (ast.type) {
     case 'Source':
@@ -111,6 +128,8 @@ function evaluate(ast, environment) {
         result: environment.variables.get(ast.name) || nullValue,
         environment,
       }
+    case 'FuncCall':
+      return evaluateFunctionCalling(ast, environment)
     case 'IntLiteral':
       return {
         result: intValue(ast.value),
