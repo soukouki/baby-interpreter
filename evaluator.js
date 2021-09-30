@@ -1,11 +1,11 @@
-const { intValue, nullValue, boolBalue } = require('./value')
+const { intValue, nullValue, boolValue } = require('./value')
 
 function evaluaterError(type, environment) {
   return {
     result: {
       type: 'EvaluatorError',
       isError: true,
-      message: `無効なast\`${type}\`が渡されました`,
+      message: `無効なast'${type}'が渡されました`,
     },
     environment,
   }
@@ -16,7 +16,7 @@ function typeError(type, environment) {
     result: {
       type: 'TypeError',
       isError: true,
-      message: `無効な型\`${type}\`が渡されました`,
+      message: `無効な型'${type}'が渡されました`,
     },
     environment,
   }
@@ -31,8 +31,8 @@ function evaluateStatements(statements, environment) {
   for (const stmt of statements) {
     // eslint-disable-next-line no-use-before-define
     const evalResult = evaluate(stmt, env)
-    if (evalResult === null) {
-      return evaluaterError(stmt, env)
+    if (evalResult.isError) {
+      return evalResult
     }
     result = evalResult.result
     env = evalResult.environment
@@ -44,8 +44,8 @@ function evaluateIfStatement(ast, initialEnvironment) {
   const { condition, statements } = ast
   // eslint-disable-next-line no-use-before-define
   const evalResult = evaluate(condition, initialEnvironment)
-  if (evalResult === null) {
-    return evaluaterError(condition, initialEnvironment)
+  if (evalResult.isError) {
+    return evalResult
   }
   const { result, environment: halfwayEnvironment } = evalResult
   if ((result.type === 'BoolValue' && result.value === false) || result.type === 'NullValue') {
@@ -87,6 +87,84 @@ function evaluateAdd(ast, environment) {
   }
 }
 
+function unwrapObject(obj) {
+  switch (obj.type) {
+    case 'IntValue':
+    case 'BoolValue':
+      return obj.value
+    case 'NullValue':
+      return null
+    default:
+      return null
+  }
+}
+
+function wrapObject(obj) {
+  const toStr = Object.prototype.toString
+  switch (toStr.call(obj)) {
+    case '[object Number]':
+      return intValue(obj)
+    case '[object Boolean]':
+      return boolValue(obj)
+    default:
+      return nullValue
+  }
+}
+
+function evaluateFunctionCalling(calling, environment) {
+  const func = environment.functions.get(calling.name)
+  if (func === undefined) {
+    return {
+      result: {
+        type: 'UndefinedFunctionError',
+        isError: true,
+        message: `関数'${calling.name}'は存在しません`,
+      },
+    }
+  }
+  const args = calling.arguments
+  if (func.argumentsCount !== args.length) {
+    return {
+      result: {
+        type: 'ArgumentsCountError',
+        isError: true,
+        message: `関数'${calling.name}'は${func.argumentsCount}個の引数を取りますが、渡されたのは${calling.arguments.length}個です`,
+      },
+    }
+  }
+  const result = (() => {
+    switch (func.type) {
+      case 'EmbededFunction':
+        // eslint-disable-next-line no-case-declarations
+        let loopEnvironment = environment
+        // eslint-disable-next-line no-case-declarations
+        const evaluatedArguments = []
+        // eslint-disable-next-line no-restricted-syntax
+        for (const stmt of args) {
+          const {
+            result: argResult, argEnvironment,
+          // eslint-disable-next-line no-use-before-define
+          } = evaluate(stmt, loopEnvironment)
+          evaluatedArguments.push(argResult)
+          loopEnvironment = argEnvironment
+        }
+        return wrapObject(func.function(...evaluatedArguments.map(unwrapObject)))
+      default:
+        return {
+          result: {
+            type: 'FunctionTypeError',
+            isError: true,
+            message: `関数'${calling.name}'の型が無効な型'${func.type}'です`,
+          },
+        }
+    }
+  })()
+  return {
+    result,
+    environment,
+  }
+}
+
 function evaluate(ast, environment) {
   switch (ast.type) {
     case 'Source':
@@ -111,6 +189,8 @@ function evaluate(ast, environment) {
         result: environment.variables.get(ast.name) || nullValue,
         environment,
       }
+    case 'FuncCall':
+      return evaluateFunctionCalling(ast, environment)
     case 'IntLiteral':
       return {
         result: intValue(ast.value),
@@ -118,7 +198,7 @@ function evaluate(ast, environment) {
       }
     case 'BoolLiteral':
       return {
-        result: boolBalue(ast.value),
+        result: boolValue(ast.value),
         environment,
       }
     case 'NullLiteral':

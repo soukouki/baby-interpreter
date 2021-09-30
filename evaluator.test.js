@@ -3,7 +3,9 @@
 const { evaluate } = require('./evaluator')
 const { parse } = require('./parser')
 const { lexicalAnalyse } = require('./lexical-analyse')
-const { emptyEnvironment, nullValue, intValue } = require('./value')
+const {
+  emptyEnvironment, nullValue, intValue, boolValue,
+} = require('./value')
 
 function lexAndParse(source) {
   return parse(lexicalAnalyse(source))
@@ -262,8 +264,174 @@ describe('評価', () => {
   })
   describe('組み込み関数', () => {
     test('組み込み関数が呼べることの確認', () => {
+      const embededFunction = jest.fn()
+      const environmentWithEmbededFunction = {
+        variables: new Map(),
+        functions: new Map([
+          ['embeded', {
+            type: 'EmbededFunction',
+            argumentsCount: 0,
+            function: embededFunction,
+          }],
+        ]),
+      }
+      expect(evaluate(lexAndParse('embeded();'), environmentWithEmbededFunction)).toStrictEqual(
+        {
+          result: nullValue,
+          environment: environmentWithEmbededFunction,
+        },
+      )
+      expect(embededFunction.mock.calls).toEqual([[]])
     })
-    test('組み込み関数に引数を渡せることの確認', () => {
+    describe('組み込み関数に引数を渡せることの確認', () => {
+      test('整数', () => {
+        const embededFunction = jest.fn()
+        const environmentWithEmbededFunction = {
+          variables: new Map(),
+          functions: new Map([
+            ['embeded', {
+              type: 'EmbededFunction',
+              argumentsCount: 1,
+              function: embededFunction,
+            }],
+          ]),
+        }
+        expect(evaluate(lexAndParse('embeded(123);'), environmentWithEmbededFunction)).toStrictEqual(
+          {
+            result: nullValue,
+            environment: environmentWithEmbededFunction,
+          },
+        )
+        expect(embededFunction.mock.calls).toEqual([[123]])
+      })
+      test('真偽値', () => {
+        const embededFunction = jest.fn()
+        const environmentWithEmbededFunction = {
+          variables: new Map(),
+          functions: new Map([
+            ['embeded', {
+              type: 'EmbededFunction',
+              argumentsCount: 2,
+              function: embededFunction,
+            }],
+          ]),
+        }
+        expect(evaluate(lexAndParse('embeded(true, false);'), environmentWithEmbededFunction)).toStrictEqual(
+          {
+            result: nullValue,
+            environment: environmentWithEmbededFunction,
+          },
+        )
+        expect(embededFunction.mock.calls).toEqual([[true, false]])
+      })
+      test('null', () => {
+        const embededFunction = jest.fn()
+        const environmentWithEmbededFunction = {
+          variables: new Map(),
+          functions: new Map([
+            ['embeded', {
+              type: 'EmbededFunction',
+              argumentsCount: 2,
+              function: embededFunction,
+            }],
+          ]),
+        }
+        expect(evaluate(lexAndParse('embeded(null, 1+2);'), environmentWithEmbededFunction)).toStrictEqual(
+          {
+            result: nullValue,
+            environment: environmentWithEmbededFunction,
+          },
+        )
+        expect(embededFunction.mock.calls).toEqual([[null, 3]])
+      })
+    })
+    describe('組み込み関数から値が返ることの確認', () => {
+      test('整数', () => {
+        const embededFunction = jest.fn()
+        const environmentWithEmbededFunction = {
+          variables: new Map(),
+          functions: new Map([
+            ['embeded', {
+              type: 'EmbededFunction',
+              argumentsCount: 0,
+              function: embededFunction,
+            }],
+          ]),
+        }
+        embededFunction.mockReturnValue(123)
+        expect(evaluate(lexAndParse('embeded();'), environmentWithEmbededFunction)).toStrictEqual(
+          {
+            result: intValue(123),
+            environment: environmentWithEmbededFunction,
+          },
+        )
+        expect(embededFunction).toHaveBeenCalled()
+      })
+      describe('真偽値', () => {
+        test('true', () => {
+          const embededFunction = jest.fn()
+          const environmentWithEmbededFunction = {
+            variables: new Map(),
+            functions: new Map([
+              ['embeded', {
+                type: 'EmbededFunction',
+                argumentsCount: 0,
+                function: embededFunction,
+              }],
+            ]),
+          }
+          embededFunction.mockReturnValue(true)
+          expect(evaluate(lexAndParse('embeded();'), environmentWithEmbededFunction)).toStrictEqual(
+            {
+              result: boolValue(true),
+              environment: environmentWithEmbededFunction,
+            },
+          )
+          expect(embededFunction).toHaveBeenCalled()
+        })
+        test('false', () => {
+          const embededFunction = jest.fn()
+          const environmentWithEmbededFunction = {
+            variables: new Map(),
+            functions: new Map([
+              ['embeded', {
+                type: 'EmbededFunction',
+                argumentsCount: 0,
+                function: embededFunction,
+              }],
+            ]),
+          }
+          embededFunction.mockReturnValue(false)
+          expect(evaluate(lexAndParse('embeded();'), environmentWithEmbededFunction)).toStrictEqual(
+            {
+              result: boolValue(false),
+              environment: environmentWithEmbededFunction,
+            },
+          )
+          expect(embededFunction).toHaveBeenCalled()
+        })
+      })
+      test('null', () => {
+        const embededFunction = jest.fn()
+        const environmentWithEmbededFunction = {
+          variables: new Map(),
+          functions: new Map([
+            ['embeded', {
+              type: 'EmbededFunction',
+              argumentsCount: 0,
+              function: embededFunction,
+            }],
+          ]),
+        }
+        embededFunction.mockReturnValue(null)
+        expect(evaluate(lexAndParse('embeded();'), environmentWithEmbededFunction)).toStrictEqual(
+          {
+            result: nullValue,
+            environment: environmentWithEmbededFunction,
+          },
+        )
+        expect(embededFunction).toHaveBeenCalled()
+      })
     })
   })
   describe('関数定義', () => {
@@ -275,7 +443,13 @@ describe('評価', () => {
     })
     test('定義した関数と環境が違うことの確認', () => {
     })
+    test('定義した関数の中で関数を呼べることの確認', () => {
+    })
+    test('定義した関数の中で自身の関数を呼べることの確認', () => {
+    })
     test('定義した関数を呼んで仮引数に渡されることの確認', () => {
     })
+  })
+  test('フィボナッチ', () => {
   })
 })

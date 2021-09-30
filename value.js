@@ -11,7 +11,7 @@ exports.intValue = function (value) {
   }
 }
 
-exports.boolBalue = function (value) {
+exports.boolValue = function (value) {
   return {
     type: 'BoolValue',
     isError: false,

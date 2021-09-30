@@ -311,7 +311,7 @@ function parseSource(tokens) {
     }
     return {
       type: 'SyntaxError',
-      message: `予期しないトークン\`${tokens[readPosition]?.type}\`が渡されました`,
+      message: `予期しないトークン'${tokens[readPosition]?.type}'が渡されました`,
       headToken: tokens[readPosition],
     }
   }
