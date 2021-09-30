@@ -152,7 +152,7 @@ function parseBlock(tokens) {
   }
   return {
     statements,
-    parsedTokensCount: readPosition + 2,
+    parsedTokensCount: readPosition + 2, // TODO ここ+1なので直す
   }
 }
 

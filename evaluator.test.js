@@ -433,23 +433,12 @@ describe('評価', () => {
         expect(embededFunction).toHaveBeenCalled()
       })
     })
-  })
-  describe('関数定義', () => {
-    test('定義ができることの確認', () => {
+    test('引数でエラーが起きたときの処理', () => {
+      const functionDefinedEnvironment = {
+        variables: new Map(),
+        functions: new Map([['func', { type: 'EmbededFunction', argumentsCount: 1 }]]),
+      }
+      expect(evaluate(lexAndParse('func(1+null);'), functionDefinedEnvironment).result.type).toBe('TypeError')
     })
-    test('すでに定義されている関数を上書き', () => {
-    })
-    test('定義した関数を呼べることの確認', () => {
-    })
-    test('定義した関数と環境が違うことの確認', () => {
-    })
-    test('定義した関数の中で関数を呼べることの確認', () => {
-    })
-    test('定義した関数の中で自身の関数を呼べることの確認', () => {
-    })
-    test('定義した関数を呼んで仮引数に渡されることの確認', () => {
-    })
-  })
-  test('フィボナッチ', () => {
   })
 })

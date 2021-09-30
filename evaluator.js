@@ -1,11 +1,12 @@
 const { intValue, nullValue, boolValue } = require('./value')
 
-function evaluaterError(type, environment) {
+function evaluaterError(ast, environment) {
   return {
     result: {
       type: 'EvaluatorError',
       isError: true,
-      message: `無効なast'${type}'が渡されました`,
+      message: `無効なast'${ast.type}'が渡されました`,
+      ast,
     },
     environment,
   }
@@ -145,6 +146,9 @@ function evaluateFunctionCalling(calling, environment) {
             result: argResult, argEnvironment,
           // eslint-disable-next-line no-use-before-define
           } = evaluate(stmt, loopEnvironment)
+          if (argResult.isError) {
+            return argResult
+          }
           evaluatedArguments.push(argResult)
           loopEnvironment = argEnvironment
         }
@@ -207,7 +211,7 @@ function evaluate(ast, environment) {
         environment,
       }
     default:
-      return evaluaterError(ast.type, environment)
+      return evaluaterError(ast, environment)
   }
 }
 
