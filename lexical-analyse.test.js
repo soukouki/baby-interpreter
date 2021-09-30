@@ -36,8 +36,8 @@ describe('字句解析', () => {
   })
   test('識別子', () => {
     expect(lexicalAnalyse('test abc')).toStrictEqual([
-      { type: 'Ident', value: 'test' },
-      { type: 'Ident', value: 'abc' },
+      { type: 'Ident', name: 'test' },
+      { type: 'Ident', name: 'abc' },
     ])
   })
   test('丸括弧', () => {

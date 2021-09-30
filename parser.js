@@ -37,7 +37,7 @@ function parseValue(tokens) {
     return {
       expression: {
         type: 'Variable',
-        name: head.value,
+        name: head.name,
       },
       parsedTokensCount: 1,
     }
@@ -102,7 +102,7 @@ function parseFunctionCallExpression(tokens) {
   return {
     expression: {
       type: 'FuncCall',
-      name: name.value,
+      name: name.name,
       arguments: args,
     },
     parsedTokensCount: parsedTokensCount + 3,
@@ -197,7 +197,7 @@ function parseAssignment(tokens) {
   return {
     assignment: {
       type: 'Assignment',
-      name: tokens[0].value,
+      name: tokens[0].name,
       expression,
     },
     parsedTokensCount: parsedTokensCount + 2,
@@ -237,7 +237,7 @@ function parseCommaSeparatedIdentfiers(tokens) {
       parsedTokensCount: 0,
     }
   }
-  const names = [head.value]
+  const names = [head.name]
   let readPosition = 1
   while (tokens[readPosition]?.type === 'Comma') {
     readPosition += 1
@@ -246,7 +246,7 @@ function parseCommaSeparatedIdentfiers(tokens) {
     if (next.type !== 'Ident') {
       break
     }
-    names.push(next.value)
+    names.push(next.name)
     readPosition += 1
   }
   return {
@@ -259,7 +259,7 @@ function parseDefineFunction(tokens) {
   if (tokens[0]?.type !== 'Def' || tokens[1]?.type !== 'Ident' || tokens[2]?.type !== 'LParen') {
     return { define: null }
   }
-  const { value: name } = tokens[1]
+  const { name } = tokens[1]
   const {
     names: args,
     parsedTokensCount: parsedArgumentTokensCount,
