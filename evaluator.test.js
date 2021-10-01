@@ -696,9 +696,32 @@ describe('評価', () => {
       ))
     })
     describe('エラー処理', () => {
-      test('実行中のエラー', () => {})
+      test('実行中のエラー', () => {
+        expect(evaluate(lexAndParse('def func(){ 1+true; 123; } func();'), emptyEnvironment).result.type).toBe('TypeError')
+      })
     })
   })
   test('フィボナッチ', () => {
+    const environment = {
+      variables: new Map(),
+      functions: new Map([
+        ['gt', {
+          type: 'EmbededFunction',
+          argumentsCount: 2,
+          function: (a, b) => a < b,
+        }],
+        ['or', {
+          type: 'EmbededFunction',
+          argumentsCount: 2,
+          function: (a, b) => a || b,
+        }],
+        ['sub', {
+          type: 'EmbededFunction',
+          argumentsCount: 2,
+          function: (a, b) => a - b,
+        }],
+      ]),
+    }
+    expect(evaluate(lexAndParse('def fib(n) { if(gt(1, n)){ ret = fib(sub(n, 1)) + fib(sub(n, 2)); } or(ret, n); } fib(20);'), environment).result).toStrictEqual(intValue(6765))
   })
 })
