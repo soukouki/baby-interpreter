@@ -10,6 +10,7 @@ module.exports = {
     },
     "rules": {
         "semi": ["error", "never"],
-        "func-names": ["off"]
+        "func-names": ["off"],
+        "no-case-declarations": ["off"]
     }
 };

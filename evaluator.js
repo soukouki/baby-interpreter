@@ -135,39 +135,46 @@ function evaluateFunctionCalling(calling, environment) {
       },
     }
   }
+  const evaluatedArguments = []
+  let argumentsEvaluatedEnvironment = environment
+  // eslint-disable-next-line no-restricted-syntax
+  for (const stmt of args) {
+    const {
+      result: argResult, environment: argEnvironment,
+    // eslint-disable-next-line no-use-before-define
+    } = evaluate(stmt, argumentsEvaluatedEnvironment)
+    if (argResult.isError) {
+      return {
+        result: argResult,
+        environment: argEnvironment,
+      }
+    }
+    evaluatedArguments.push(argResult)
+    argumentsEvaluatedEnvironment = argEnvironment
+  }
   const result = (() => {
     switch (func.type) {
       case 'EmbededFunction':
-        // eslint-disable-next-line no-case-declarations
-        let loopEnvironment = environment
-        // eslint-disable-next-line no-case-declarations
-        const evaluatedArguments = []
-        // eslint-disable-next-line no-restricted-syntax
-        for (const stmt of args) {
-          const {
-            result: argResult, argEnvironment,
-          // eslint-disable-next-line no-use-before-define
-          } = evaluate(stmt, loopEnvironment)
-          if (argResult.isError) {
-            return argResult
-          }
-          evaluatedArguments.push(argResult)
-          loopEnvironment = argEnvironment
-        }
         return wrapObject(func.function(...evaluatedArguments.map(unwrapObject)))
+      case 'DefinedFunction':
+        return evaluateStatements(func.statements, {
+          variables: new Map(
+            [...Array(func.argumentsCount).keys()]
+              .map((i) => [func.arguments[i], evaluatedArguments[i]]),
+          ),
+          functions: argumentsEvaluatedEnvironment.functions,
+        }).result
       default:
         return {
-          result: {
-            type: 'FunctionTypeError',
-            isError: true,
-            message: `関数'${calling.name}'の型が無効な型'${func.type}'です`,
-          },
+          type: 'FunctionTypeError',
+          isError: true,
+          message: `関数'${calling.name}'の型が無効な型'${func.type}'です`,
         }
     }
   })()
   return {
     result,
-    environment,
+    environment: argumentsEvaluatedEnvironment,
   }
 }
 
@@ -176,7 +183,7 @@ function evaluateFunctionDefinition(ast, environment) {
     result: nullValue,
     environment: {
       variables: environment.variables,
-      functions: new Map(environment.variables).set(
+      functions: new Map(environment.functions).set(
         ast.name,
         {
           type: 'DefinedFunction',

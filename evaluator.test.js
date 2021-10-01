@@ -508,6 +508,196 @@ describe('評価', () => {
         },
       )
     })
+    test('定義した関数を呼べることの確認', () => {
+      expect(evaluate(lexAndParse('def func() { 123; } func();'), emptyEnvironment)).toStrictEqual(
+        {
+          result: intValue(123),
+          environment: {
+            variables: new Map(),
+            functions: new Map([
+              ['func', {
+                type: 'DefinedFunction',
+                argumentsCount: 0,
+                arguments: [],
+                statements: [{ type: 'IntLiteral', value: 123 }],
+              }],
+            ]),
+          },
+        },
+      )
+    })
+    test('定義した関数に引数を付けて呼べることの確認', () => {
+      expect(evaluate(lexAndParse('def func(abc) { abc; } func(123);'), emptyEnvironment)).toStrictEqual(
+        {
+          result: intValue(123),
+          environment: {
+            variables: new Map(),
+            functions: new Map([
+              ['func', {
+                type: 'DefinedFunction',
+                argumentsCount: 1,
+                arguments: ['abc'],
+                statements: [{ type: 'Variable', name: 'abc' }],
+              }],
+            ]),
+          },
+        },
+      )
+    })
+    test('定義した関数と環境が違うことの確認', () => {
+      expect(evaluate(lexAndParse('abc = 123; def func() { abc=456; } func(); abc;'), emptyEnvironment)).toStrictEqual(
+        {
+          result: intValue(123),
+          environment: {
+            variables: new Map([['abc', intValue(123)]]),
+            functions: new Map([
+              ['func', {
+                type: 'DefinedFunction',
+                argumentsCount: 0,
+                arguments: [],
+                statements: [
+                  {
+                    type: 'Assignment',
+                    name: 'abc',
+                    expression: { type: 'IntLiteral', value: 456 },
+                  },
+                ],
+              }],
+            ]),
+          },
+        },
+      )
+    })
+    test('定義した関数の仮引数と環境が違うことの確認', () => {
+      expect(evaluate(lexAndParse('abc = 123; def func(abc) { } func(456); abc;'), emptyEnvironment)).toStrictEqual(
+        {
+          result: intValue(123),
+          environment: {
+            variables: new Map([['abc', intValue(123)]]),
+            functions: new Map([
+              ['func', {
+                type: 'DefinedFunction',
+                argumentsCount: 1,
+                arguments: ['abc'],
+                statements: [],
+              }],
+            ]),
+          },
+        },
+      )
+    })
+    test('定義した関数の中で関数を呼べることの確認', () => {
+      expect(evaluate(lexAndParse('def a(){b();} def b(){123;} a();'), emptyEnvironment)).toStrictEqual(
+        {
+          result: intValue(123),
+          environment: {
+            variables: new Map(),
+            functions: new Map([
+              ['a', {
+                type: 'DefinedFunction',
+                argumentsCount: 0,
+                arguments: [],
+                statements: [{ type: 'FuncCall', name: 'b', arguments: [] }],
+              }],
+              ['b', {
+                type: 'DefinedFunction',
+                argumentsCount: 0,
+                arguments: [],
+                statements: [{ type: 'IntLiteral', value: 123 }],
+              }],
+            ]),
+          },
+        },
+      )
+    })
+    test('定義した関数の中で自身の関数を呼べることの確認', () => {
+      const embededFunctions = [
+        ['notequal', {
+          type: 'EmbededFunction',
+          argumentsCount: 2,
+          function: (a, b) => a !== b,
+        }],
+        ['or', {
+          type: 'EmbededFunction',
+          argumentsCount: 2,
+          function: (a, b) => a || b,
+        }],
+      ]
+      const definedEmbededFunctionEnvironment = {
+        variables: new Map(),
+        functions: new Map(embededFunctions),
+      }
+      // なぜかJSON.stringifyしないとテストが失敗する
+      expect(JSON.stringify(evaluate(
+        lexAndParse('def func(n) { if(notequal(n, 5)) { res = func(n+1); } or(res, n); } func(0);'),
+        definedEmbededFunctionEnvironment,
+      ))).toEqual(JSON.stringify(
+        {
+          result: intValue(5),
+          environment: {
+            variables: new Map(),
+            functions: new Map(
+              [
+                ['notequal', {
+                  type: 'EmbededFunction',
+                  argumentsCount: 2,
+                  function: (a, b) => a !== b,
+                }],
+                ['or', {
+                  type: 'EmbededFunction',
+                  argumentsCount: 2,
+                  function: (a, b) => a || b,
+                }],
+                ['func', {
+                  type: 'DefinedFunction',
+                  argumentsCount: 1,
+                  arguments: ['n'],
+                  statements: [
+                    {
+                      type: 'If',
+                      condition: {
+                        type: 'FuncCall',
+                        name: 'notequal',
+                        arguments: [
+                          { type: 'Variable', name: 'n' },
+                          { type: 'IntLiteral', value: 5 },
+                        ],
+                      },
+                      statements: [
+                        {
+                          type: 'Assignment',
+                          name: 'res',
+                          expression: {
+                            type: 'FuncCall',
+                            name: 'func',
+                            arguments: [{
+                              type: 'Add',
+                              left: { type: 'Variable', name: 'n' },
+                              right: { type: 'IntLiteral', value: 1 },
+                            }],
+                          },
+                        },
+                      ],
+                    },
+                    {
+                      type: 'FuncCall',
+                      name: 'or',
+                      arguments: [
+                        { type: 'Variable', name: 'res' },
+                        { type: 'Variable', name: 'n' },
+                      ],
+                    },
+                  ],
+                }],
+              ],
+            ),
+          },
+        },
+      ))
+    })
+    describe('エラー処理', () => {
+      test('実行中のエラー', () => {})
+    })
   })
   test('フィボナッチ', () => {
   })
