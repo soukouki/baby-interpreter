@@ -15,169 +15,26 @@ describe('評価', () => {
       expect(evaluate({
         type: 'Source',
         statements: [{ type: 'UnknownAST' }],
-      }, {
-        variables: new Map(),
-        functions: new Map(),
-      }).result.type).toBe('EvaluatorError')
-    })
-    test('型エラー', () => {
-      expect(evaluate(lexAndParse('a+1;'), {
-        variables: new Map([['a', { type: 'NullValue' }]]),
-        functions: new Map(),
-      }).result.type).toBe('TypeError')
-    })
-  })
-  test('1;', () => {
-    expect(evaluate({
-      type: 'Source',
-      statements: [
-        { type: 'IntLiteral', value: 1 },
-      ],
-    }, {
-      variables: new Map(),
-      functions: new Map(),
-    })).toStrictEqual(
-      {
-        result: {
-          type: 'IntValue',
-          isError: false,
-          value: 1,
-        },
-        environment: {
-          variables: new Map(),
-          functions: new Map(),
-        },
-      },
-    )
-  })
-  describe('Add', () => {
-    test('1+2;', () => {
-      expect(evaluate(lexAndParse('1+2;'), emptyEnvironment)).toStrictEqual(
-        {
-          result: {
-            type: 'IntValue',
-            isError: false,
-            value: 3,
-          },
-          environment: {
-            variables: new Map(),
-            functions: new Map(),
-          },
-        },
-      )
-    })
-    test('エラー時にエラーを上げていく処理', () => {
-      expect(evaluate(lexAndParse('(1+non)+23;'), emptyEnvironment).result.type).toBe('TypeError')
-      expect(evaluate(lexAndParse('1+(non+23);'), emptyEnvironment).result.type).toBe('TypeError')
-    })
-  })
-  test('複数の文', () => {
-    expect(evaluate(lexAndParse('1;2;'), emptyEnvironment)).toStrictEqual(
-      {
-        result: {
-          type: 'IntValue',
-          isError: false,
-          value: 2,
-        },
-        environment: {
-          variables: new Map(),
-          functions: new Map(),
-        },
-      },
-    )
-  })
-  test('代入文', () => {
-    expect(evaluate(lexAndParse('a=1;'), emptyEnvironment)).toStrictEqual(
-      {
-        result: {
-          type: 'NullValue',
-          isError: false,
-        },
-        environment: {
-          variables: new Map([
-            ['a', {
-              type: 'IntValue',
-              isError: false,
-              value: 1,
-            }],
-          ]),
-          functions: new Map(),
-        },
-      },
-    )
-  })
-  describe('変数の参照', () => {
-    test('正常な参照', () => {
-      expect(evaluate(lexAndParse('value;'), {
-        variables: new Map([
-          ['value', {
-            type: 'IntValue',
-            isError: false,
-            value: 123,
-          }],
-        ]),
-        functions: new Map(),
-      })).toStrictEqual(
-        {
-          result: {
-            type: 'IntValue',
-            isError: false,
-            value: 123,
-          },
-          environment: {
-            variables: new Map([
-              ['value', {
-                type: 'IntValue',
-                isError: false,
-                value: 123,
-              }],
-            ]),
-            functions: new Map(),
-          },
-        },
-      )
-    })
-    test('存在しない参照', () => {
-      expect(evaluate(lexAndParse('non;'), emptyEnvironment)).toStrictEqual(
-        {
-          result: {
-            type: 'NullValue',
-            isError: false,
-          },
-          environment: {
-            variables: new Map(),
-            functions: new Map(),
-          },
-        },
-      )
+      }, emptyEnvironment).result.type).toBe('EvaluatorError')
     })
   })
   describe('各種リテラル', () => {
     test('整数', () => {
-      expect(evaluate(lexAndParse('123;'), emptyEnvironment)).toStrictEqual(
+      expect(evaluate(lexAndParse('123;'), emptyEnvironment).result).toStrictEqual(
         {
-          result: {
-            type: 'IntValue',
-            isError: false,
-            value: 123,
-          },
-          environment: {
-            variables: new Map(),
-            functions: new Map(),
-          },
+          type: 'IntValue',
+          isError: false,
+          value: 123,
         },
       )
     })
     describe('真偽値', () => {
       test('true', () => {
-        expect(evaluate(lexAndParse('true;'), emptyEnvironment)).toStrictEqual(
+        expect(evaluate(lexAndParse('true;'), emptyEnvironment).result).toStrictEqual(
           {
-            result: {
-              type: 'BoolValue',
-              isError: false,
-              value: true,
-            },
-            environment: emptyEnvironment,
+            type: 'BoolValue',
+            isError: false,
+            value: true,
           },
         )
       })
@@ -201,6 +58,79 @@ describe('評価', () => {
             type: 'NullValue',
             isError: false,
           },
+          environment: emptyEnvironment,
+        },
+      )
+    })
+  })
+  describe('足し算', () => {
+    test('1+2;', () => {
+      expect(evaluate(lexAndParse('1+2;'), emptyEnvironment)).toStrictEqual(
+        {
+          result: intValue(3),
+          environment: emptyEnvironment,
+        },
+      )
+    })
+    test('型エラー', () => {
+      expect(evaluate(lexAndParse('a+1;'), {
+        variables: new Map([['a', { type: 'NullValue' }]]),
+        functions: new Map(),
+      }).result.type).toBe('TypeError')
+    })
+    test('エラー時にエラーを上げていく処理', () => {
+      expect(evaluate(lexAndParse('(1+non)+23;'), emptyEnvironment).result.type).toBe('TypeError')
+      expect(evaluate(lexAndParse('1+(non+23);'), emptyEnvironment).result.type).toBe('TypeError')
+    })
+  })
+  test('複数の文', () => {
+    expect(evaluate(lexAndParse('1;2;'), emptyEnvironment)).toStrictEqual(
+      {
+        result: intValue(2),
+        environment: emptyEnvironment,
+      },
+    )
+  })
+  test('代入文', () => {
+    expect(evaluate(lexAndParse('a=1;'), emptyEnvironment)).toStrictEqual(
+      {
+        result: nullValue,
+        environment: {
+          variables: new Map([
+            ['a', {
+              type: 'IntValue',
+              isError: false,
+              value: 1,
+            }],
+          ]),
+          functions: new Map(),
+        },
+      },
+    )
+  })
+  describe('変数の参照', () => {
+    test('正常な参照', () => {
+      expect(evaluate(lexAndParse('value;'), {
+        variables: new Map([
+          ['value', intValue(123)],
+        ]),
+        functions: new Map(),
+      })).toStrictEqual(
+        {
+          result: intValue(123),
+          environment: {
+            variables: new Map([
+              ['value', intValue(123)],
+            ]),
+            functions: new Map(),
+          },
+        },
+      )
+    })
+    test('存在しない参照', () => {
+      expect(evaluate(lexAndParse('non;'), emptyEnvironment)).toStrictEqual(
+        {
+          result: nullValue,
           environment: emptyEnvironment,
         },
       )
@@ -352,18 +282,18 @@ describe('評価', () => {
       })
     })
     describe('組み込み関数から値が返ることの確認', () => {
+      const embededFunction = jest.fn()
+      const environmentWithEmbededFunction = {
+        variables: new Map(),
+        functions: new Map([
+          ['embeded', {
+            type: 'EmbededFunction',
+            argumentsCount: 0,
+            function: embededFunction,
+          }],
+        ]),
+      }
       test('整数', () => {
-        const embededFunction = jest.fn()
-        const environmentWithEmbededFunction = {
-          variables: new Map(),
-          functions: new Map([
-            ['embeded', {
-              type: 'EmbededFunction',
-              argumentsCount: 0,
-              function: embededFunction,
-            }],
-          ]),
-        }
         embededFunction.mockReturnValue(123)
         expect(evaluate(lexAndParse('embeded();'), environmentWithEmbededFunction)).toStrictEqual(
           {
@@ -375,17 +305,6 @@ describe('評価', () => {
       })
       describe('真偽値', () => {
         test('true', () => {
-          const embededFunction = jest.fn()
-          const environmentWithEmbededFunction = {
-            variables: new Map(),
-            functions: new Map([
-              ['embeded', {
-                type: 'EmbededFunction',
-                argumentsCount: 0,
-                function: embededFunction,
-              }],
-            ]),
-          }
           embededFunction.mockReturnValue(true)
           expect(evaluate(lexAndParse('embeded();'), environmentWithEmbededFunction)).toStrictEqual(
             {
@@ -396,17 +315,6 @@ describe('評価', () => {
           expect(embededFunction).toHaveBeenCalled()
         })
         test('false', () => {
-          const embededFunction = jest.fn()
-          const environmentWithEmbededFunction = {
-            variables: new Map(),
-            functions: new Map([
-              ['embeded', {
-                type: 'EmbededFunction',
-                argumentsCount: 0,
-                function: embededFunction,
-              }],
-            ]),
-          }
           embededFunction.mockReturnValue(false)
           expect(evaluate(lexAndParse('embeded();'), environmentWithEmbededFunction)).toStrictEqual(
             {
@@ -418,17 +326,6 @@ describe('評価', () => {
         })
       })
       test('null', () => {
-        const embededFunction = jest.fn()
-        const environmentWithEmbededFunction = {
-          variables: new Map(),
-          functions: new Map([
-            ['embeded', {
-              type: 'EmbededFunction',
-              argumentsCount: 0,
-              function: embededFunction,
-            }],
-          ]),
-        }
         embededFunction.mockReturnValue(null)
         expect(evaluate(lexAndParse('embeded();'), environmentWithEmbededFunction)).toStrictEqual(
           {
@@ -507,105 +404,28 @@ describe('評価', () => {
       )
     })
     test('定義した関数を呼べることの確認', () => {
-      expect(evaluate(lexAndParse('def func() { 123; } func();'), emptyEnvironment)).toStrictEqual(
-        {
-          result: intValue(123),
-          environment: {
-            variables: new Map(),
-            functions: new Map([
-              ['func', {
-                type: 'DefinedFunction',
-                argumentsCount: 0,
-                arguments: [],
-                statements: [{ type: 'IntLiteral', value: 123 }],
-              }],
-            ]),
-          },
-        },
+      expect(evaluate(lexAndParse('def func() { 123; } func();'), emptyEnvironment).result).toStrictEqual(
+        intValue(123),
       )
     })
     test('定義した関数に引数を付けて呼べることの確認', () => {
-      expect(evaluate(lexAndParse('def func(abc) { abc; } func(123);'), emptyEnvironment)).toStrictEqual(
-        {
-          result: intValue(123),
-          environment: {
-            variables: new Map(),
-            functions: new Map([
-              ['func', {
-                type: 'DefinedFunction',
-                argumentsCount: 1,
-                arguments: ['abc'],
-                statements: [{ type: 'Variable', name: 'abc' }],
-              }],
-            ]),
-          },
-        },
+      expect(evaluate(lexAndParse('def func(abc) { abc; } func(123);'), emptyEnvironment).result).toStrictEqual(
+        intValue(123),
       )
     })
     test('定義した関数と環境が違うことの確認', () => {
-      expect(evaluate(lexAndParse('abc = 123; def func() { abc=456; } func(); abc;'), emptyEnvironment)).toStrictEqual(
-        {
-          result: intValue(123),
-          environment: {
-            variables: new Map([['abc', intValue(123)]]),
-            functions: new Map([
-              ['func', {
-                type: 'DefinedFunction',
-                argumentsCount: 0,
-                arguments: [],
-                statements: [
-                  {
-                    type: 'Assignment',
-                    name: 'abc',
-                    expression: { type: 'IntLiteral', value: 456 },
-                  },
-                ],
-              }],
-            ]),
-          },
-        },
+      expect(evaluate(lexAndParse('abc = 123; def func() { abc=456; } func(); abc;'), emptyEnvironment).result).toStrictEqual(
+        intValue(123),
       )
     })
     test('定義した関数の仮引数と環境が違うことの確認', () => {
-      expect(evaluate(lexAndParse('abc = 123; def func(abc) { } func(456); abc;'), emptyEnvironment)).toStrictEqual(
-        {
-          result: intValue(123),
-          environment: {
-            variables: new Map([['abc', intValue(123)]]),
-            functions: new Map([
-              ['func', {
-                type: 'DefinedFunction',
-                argumentsCount: 1,
-                arguments: ['abc'],
-                statements: [],
-              }],
-            ]),
-          },
-        },
+      expect(evaluate(lexAndParse('abc = 123; def func(abc) { } func(456); abc;'), emptyEnvironment).result).toStrictEqual(
+        intValue(123),
       )
     })
     test('定義した関数の中で関数を呼べることの確認', () => {
-      expect(evaluate(lexAndParse('def a(){b();} def b(){123;} a();'), emptyEnvironment)).toStrictEqual(
-        {
-          result: intValue(123),
-          environment: {
-            variables: new Map(),
-            functions: new Map([
-              ['a', {
-                type: 'DefinedFunction',
-                argumentsCount: 0,
-                arguments: [],
-                statements: [{ type: 'FuncCall', name: 'b', arguments: [] }],
-              }],
-              ['b', {
-                type: 'DefinedFunction',
-                argumentsCount: 0,
-                arguments: [],
-                statements: [{ type: 'IntLiteral', value: 123 }],
-              }],
-            ]),
-          },
-        },
+      expect(evaluate(lexAndParse('def a(){b();} def b(){123;} a();'), emptyEnvironment).result).toStrictEqual(
+        intValue(123),
       )
     })
     test('定義した関数の中で自身の関数を呼べることの確認', () => {
@@ -625,73 +445,12 @@ describe('評価', () => {
         variables: new Map(),
         functions: new Map(embededFunctions),
       }
-      // なぜかJSON.stringifyしないとテストが失敗する
-      expect(JSON.stringify(evaluate(
+      expect(evaluate(
         lexAndParse('def func(n) { if(notequal(n, 5)) { res = func(n+1); } or(res, n); } func(0);'),
         definedEmbededFunctionEnvironment,
-      ))).toEqual(JSON.stringify(
-        {
-          result: intValue(5),
-          environment: {
-            variables: new Map(),
-            functions: new Map(
-              [
-                ['notequal', {
-                  type: 'EmbededFunction',
-                  argumentsCount: 2,
-                  function: (a, b) => a !== b,
-                }],
-                ['or', {
-                  type: 'EmbededFunction',
-                  argumentsCount: 2,
-                  function: (a, b) => a || b,
-                }],
-                ['func', {
-                  type: 'DefinedFunction',
-                  argumentsCount: 1,
-                  arguments: ['n'],
-                  statements: [
-                    {
-                      type: 'If',
-                      condition: {
-                        type: 'FuncCall',
-                        name: 'notequal',
-                        arguments: [
-                          { type: 'Variable', name: 'n' },
-                          { type: 'IntLiteral', value: 5 },
-                        ],
-                      },
-                      statements: [
-                        {
-                          type: 'Assignment',
-                          name: 'res',
-                          expression: {
-                            type: 'FuncCall',
-                            name: 'func',
-                            arguments: [{
-                              type: 'Add',
-                              left: { type: 'Variable', name: 'n' },
-                              right: { type: 'IntLiteral', value: 1 },
-                            }],
-                          },
-                        },
-                      ],
-                    },
-                    {
-                      type: 'FuncCall',
-                      name: 'or',
-                      arguments: [
-                        { type: 'Variable', name: 'res' },
-                        { type: 'Variable', name: 'n' },
-                      ],
-                    },
-                  ],
-                }],
-              ],
-            ),
-          },
-        },
-      ))
+      ).result).toEqual(
+        intValue(5),
+      )
     })
     describe('エラー処理', () => {
       test('実行中のエラー', () => {
@@ -699,7 +458,7 @@ describe('評価', () => {
       })
     })
   })
-  test('フィボナッチ', () => {
+  test('フィボナッチ数列', () => {
     const environment = {
       variables: new Map(),
       functions: new Map([
@@ -720,6 +479,6 @@ describe('評価', () => {
         }],
       ]),
     }
-    expect(evaluate(lexAndParse('def fib(n) { if(gt(1, n)){ ret = fib(sub(n, 1)) + fib(sub(n, 2)); } or(ret, n); } fib(20);'), environment).result).toStrictEqual(intValue(6765))
+    expect(evaluate(lexAndParse('def fib(n) { if(gt(1, n)){ ret = fib(sub(n, 1)) + fib(sub(n, 2)); } or(ret, n); } fib(10);'), environment).result).toStrictEqual(intValue(55))
   })
 })
