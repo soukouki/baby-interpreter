@@ -1,5 +1,3 @@
-/* eslint-disable no-undef */
-
 const { parse } = require('./parser')
 const { lexicalAnalyse } = require('./lexical-analyse')
 
@@ -60,10 +58,10 @@ describe('構文解析', () => {
         { type: 'Semicolon' },
       ]).type).toBe('SyntaxError')
     })
-    test('複数の文(空)', () => {
+    test('セミコロンのみ', () => {
       expect(parse([{ type: 'Semicolon' }]).type).toBe('SyntaxError')
     })
-    test('複数の文(空)', () => {
+    test('セミコロンのみ(複数)', () => {
       expect(parse([
         { type: 'Semicolon' },
         { type: 'Semicolon' },

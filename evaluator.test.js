@@ -1,5 +1,3 @@
-/* eslint-disable no-undef */
-
 const { evaluate } = require('./evaluator')
 const { parse } = require('./parser')
 const { lexicalAnalyse } = require('./lexical-analyse')

@@ -1,5 +1,3 @@
-/* eslint-disable no-undef */
-
 const { lexicalAnalyse } = require('./lexical-analyse')
 
 describe('字句解析', () => {
@@ -59,10 +57,12 @@ describe('字句解析', () => {
     expect(lexicalAnalyse(';')).toStrictEqual([{ type: 'Semicolon' }])
   })
   describe('キーワード', () => {
-    expect(lexicalAnalyse('if def')).toStrictEqual([
-      { type: 'If' },
-      { type: 'Def' },
-    ])
+    test('構文用のキーワード', () => {
+      expect(lexicalAnalyse('if def')).toStrictEqual([
+        { type: 'If' },
+        { type: 'Def' },
+      ])
+    })
     test('真偽値', () => {
       expect(lexicalAnalyse('true false')).toStrictEqual([
         { type: 'Bool', value: true },

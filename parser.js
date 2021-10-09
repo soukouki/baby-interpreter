@@ -296,7 +296,6 @@ function parseSource(tokens) {
     if (stmt) {
       statements.push(stmt)
       readPosition += parsedExpressionTokensCount
-      // eslint-disable-next-line no-continue
       continue
     }
     const {
@@ -306,7 +305,6 @@ function parseSource(tokens) {
     if (defineFunction) {
       statements.push(defineFunction)
       readPosition += parsedDefineFunctionTokensCount
-      // eslint-disable-next-line no-continue
       continue
     }
     return {

@@ -1,4 +1,3 @@
-/* eslint-disable no-continue */
 /* eslint-disable no-console */
 
 const prompts = require('prompts')
