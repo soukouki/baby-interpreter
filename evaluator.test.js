@@ -14,7 +14,7 @@ describe('評価', () => {
     test('不明なAST', () => {
       expect(evaluate({
         type: 'Source',
-        statements: [{ type: 'UnknownAST' }],
+        partsOfSource: [{ type: 'UnknownAST' }],
       }, emptyEnvironment).result.type).toBe('EvaluatorError')
     })
   })

@@ -23,24 +23,6 @@ function typeError(type, environment) {
   }
 }
 
-function evaluateStatements(statements, environment) {
-  let result = nullValue
-  let env = environment
-  // forEachではreturnを使って値を返せないので書きづらく、
-  // またreduceでは条件分岐が複雑になり書きづらいので、for文を使って処理しています
-  // eslint-disable-next-line no-restricted-syntax
-  for (const stmt of statements) {
-    // eslint-disable-next-line no-use-before-define
-    const { result: evaluatedResult, environment: evaluatedEnvironment } = evaluate(stmt, env)
-    if (evaluatedResult.isError) {
-      return { result: evaluatedResult, environment: evaluatedEnvironment }
-    }
-    result = evaluatedResult
-    env = evaluatedEnvironment
-  }
-  return { result, environment: env }
-}
-
 function evaluateIfStatement(ast, initialEnvironment) {
   const { condition, statements } = ast
   // eslint-disable-next-line no-use-before-define
@@ -58,7 +40,7 @@ function evaluateIfStatement(ast, initialEnvironment) {
     }
   }
   // eslint-disable-next-line no-use-before-define
-  return evaluateStatements(statements, halfwayEnvironment)
+  return evaluateMultiAST(statements, halfwayEnvironment)
 }
 
 function evaluateAdd(ast, environment) {
@@ -114,6 +96,28 @@ function wrapObject(obj) {
   }
 }
 
+function callFunction(func, name, args, env) {
+  switch (func.type) {
+    case 'EmbededFunction':
+      return wrapObject(func.function(...args.map(unwrapObject)))
+    case 'DefinedFunction':
+      // eslint-disable-next-line no-use-before-define
+      return evaluateMultiAST(func.statements, {
+        variables: new Map(
+          [...Array(func.argumentsCount).keys()]
+            .map((i) => [func.arguments[i], args[i]]),
+        ),
+        functions: env.functions,
+      }).result
+    default:
+      return {
+        type: 'FunctionTypeError',
+        isError: true,
+        message: `関数'${name}'の型が無効な型'${func.type}'です`,
+      }
+  }
+}
+
 function evaluateFunctionCalling(calling, environment) {
   const func = environment.functions.get(calling.name)
   if (func === undefined) {
@@ -152,54 +156,55 @@ function evaluateFunctionCalling(calling, environment) {
     evaluatedArguments.push(argResult)
     argumentsEvaluatedEnvironment = argEnvironment
   }
-  const result = (() => {
-    switch (func.type) {
-      case 'EmbededFunction':
-        return wrapObject(func.function(...evaluatedArguments.map(unwrapObject)))
-      case 'DefinedFunction':
-        return evaluateStatements(func.statements, {
-          variables: new Map(
-            [...Array(func.argumentsCount).keys()]
-              .map((i) => [func.arguments[i], evaluatedArguments[i]]),
-          ),
-          functions: argumentsEvaluatedEnvironment.functions,
-        }).result
-      default:
-        return {
-          type: 'FunctionTypeError',
-          isError: true,
-          message: `関数'${calling.name}'の型が無効な型'${func.type}'です`,
-        }
-    }
-  })()
+  const result = callFunction(
+    func, calling.name, evaluatedArguments, argumentsEvaluatedEnvironment,
+  )
   return {
     result,
     environment: argumentsEvaluatedEnvironment,
   }
 }
 
-function evaluateFunctionDefinition(ast, environment) {
+function evaluateFunctionDefinition(funcDef, environment) {
   return {
     result: nullValue,
     environment: {
       variables: environment.variables,
       functions: new Map(environment.functions).set(
-        ast.name,
+        funcDef.name,
         {
           type: 'DefinedFunction',
-          argumentsCount: ast.arguments.length,
-          arguments: ast.arguments,
-          statements: ast.statements,
+          argumentsCount: funcDef.arguments.length,
+          arguments: funcDef.arguments,
+          statements: funcDef.statements,
         },
       ),
     },
   }
 }
 
+function evaluateMultiAST(partsOfSource, environment) {
+  let result = nullValue
+  let env = environment
+  // forEachではreturnを使って値を返せないので書きづらく、
+  // またreduceでは条件分岐が複雑になり書きづらいので、for文を使って処理しています
+  // eslint-disable-next-line no-restricted-syntax
+  for (const part of partsOfSource) {
+    // eslint-disable-next-line no-use-before-define
+    const { result: evaluatedResult, environment: evaluatedEnvironment } = evaluate(part, env)
+    if (evaluatedResult.isError) {
+      return { result: evaluatedResult, environment: evaluatedEnvironment }
+    }
+    result = evaluatedResult
+    env = evaluatedEnvironment
+  }
+  return { result, environment: env }
+}
+
 function evaluate(ast, environment) {
   switch (ast.type) {
     case 'Source':
-      return evaluateStatements(ast.statements, environment)
+      return evaluateMultiAST(ast.partsOfSource, environment)
     case 'FuncDef':
       return evaluateFunctionDefinition(ast, environment)
     case 'Assignment':

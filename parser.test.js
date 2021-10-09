@@ -5,7 +5,7 @@ const lex = lexicalAnalyse
 
 describe('構文解析', () => {
   test('空', () => {
-    expect(parse([])).toStrictEqual({ type: 'Source', statements: [] })
+    expect(parse([])).toStrictEqual({ type: 'Source', partsOfSource: [] })
   })
   test('1つの文', () => {
     expect(parse([
@@ -14,7 +14,7 @@ describe('構文解析', () => {
     ])).toStrictEqual(
       {
         type: 'Source',
-        statements: [
+        partsOfSource: [
           { type: 'IntLiteral', value: 123 },
         ],
       },
@@ -24,7 +24,7 @@ describe('構文解析', () => {
     expect(parse(lex('1;2;'))).toStrictEqual(
       {
         type: 'Source',
-        statements: [
+        partsOfSource: [
           { type: 'IntLiteral', value: 1 },
           { type: 'IntLiteral', value: 2 },
         ],
@@ -64,23 +64,23 @@ describe('構文解析', () => {
   })
   describe('各種リテラル', () => {
     test('整数', () => {
-      expect(parse(lex('123;')).statements[0]).toStrictEqual({ type: 'IntLiteral', value: 123 })
+      expect(parse(lex('123;')).partsOfSource[0]).toStrictEqual({ type: 'IntLiteral', value: 123 })
     })
     describe('真偽値', () => {
       test('true', () => {
-        expect(parse(lex('true;')).statements[0]).toStrictEqual({ type: 'BoolLiteral', value: true })
+        expect(parse(lex('true;')).partsOfSource[0]).toStrictEqual({ type: 'BoolLiteral', value: true })
       })
       test('false', () => {
-        expect(parse(lex('false;')).statements[0]).toStrictEqual({ type: 'BoolLiteral', value: false })
+        expect(parse(lex('false;')).partsOfSource[0]).toStrictEqual({ type: 'BoolLiteral', value: false })
       })
     })
     test('null', () => {
-      expect(parse(lex('null;')).statements[0]).toStrictEqual({ type: 'NullLiteral' })
+      expect(parse(lex('null;')).partsOfSource[0]).toStrictEqual({ type: 'NullLiteral' })
     })
   })
   describe('足し算', () => {
     test('1+2;', () => {
-      expect(parse(lex('1+2;')).statements[0]).toStrictEqual(
+      expect(parse(lex('1+2;')).partsOfSource[0]).toStrictEqual(
         {
           type: 'Add',
           left: { type: 'IntLiteral', value: 1 },
@@ -89,7 +89,7 @@ describe('構文解析', () => {
       )
     })
     test('1+2+3;', () => {
-      expect(parse(lex('1+2+3;')).statements[0]).toStrictEqual(
+      expect(parse(lex('1+2+3;')).partsOfSource[0]).toStrictEqual(
         {
           type: 'Add',
           left: {
@@ -103,18 +103,18 @@ describe('構文解析', () => {
     })
   })
   test('変数', () => {
-    expect(parse(lex('abc;')).statements[0]).toStrictEqual(
+    expect(parse(lex('abc;')).partsOfSource[0]).toStrictEqual(
       { type: 'Variable', name: 'abc' },
     )
   })
   describe('括弧', () => {
     test('括弧の中にリテラル', () => {
-      expect(parse(lex('(123);')).statements[0]).toStrictEqual(
+      expect(parse(lex('(123);')).partsOfSource[0]).toStrictEqual(
         { type: 'IntLiteral', value: 123 },
       )
     })
     test('括弧と足し算', () => {
-      expect(parse(lex('1+(2+3);')).statements[0]).toStrictEqual(
+      expect(parse(lex('1+(2+3);')).partsOfSource[0]).toStrictEqual(
         {
           type: 'Add',
           left: { type: 'IntLiteral', value: 1 },
@@ -129,7 +129,7 @@ describe('構文解析', () => {
   })
   describe('関数呼び出し', () => {
     test('引数0個', () => {
-      expect(parse(lex('call();')).statements[0]).toStrictEqual(
+      expect(parse(lex('call();')).partsOfSource[0]).toStrictEqual(
         {
           type: 'FuncCall',
           name: 'call',
@@ -138,7 +138,7 @@ describe('構文解析', () => {
       )
     })
     test('引数1個', () => {
-      expect(parse(lex('abc(12);')).statements[0]).toStrictEqual(
+      expect(parse(lex('abc(12);')).partsOfSource[0]).toStrictEqual(
         {
           type: 'FuncCall',
           name: 'abc',
@@ -149,7 +149,7 @@ describe('構文解析', () => {
       )
     })
     test('引数2個', () => {
-      expect(parse(lex('xxx((12), 3+4);')).statements[0]).toStrictEqual(
+      expect(parse(lex('xxx((12), 3+4);')).partsOfSource[0]).toStrictEqual(
         {
           type: 'FuncCall',
           name: 'xxx',
@@ -165,7 +165,7 @@ describe('構文解析', () => {
       )
     })
     test('引数と演算', () => {
-      expect(parse(lex('x()+y();')).statements[0]).toStrictEqual(
+      expect(parse(lex('x()+y();')).partsOfSource[0]).toStrictEqual(
         {
           type: 'Add',
           left: {
@@ -187,7 +187,7 @@ describe('構文解析', () => {
   })
   describe('代入文', () => {
     test('代入とリテラル', () => {
-      expect(parse(lex('yes=true;')).statements[0]).toStrictEqual(
+      expect(parse(lex('yes=true;')).partsOfSource[0]).toStrictEqual(
         {
           type: 'Assignment',
           name: 'yes',
@@ -199,7 +199,7 @@ describe('構文解析', () => {
       )
     })
     test('代入と足し算', () => {
-      expect(parse(lex('two=1+1;')).statements[0]).toStrictEqual(
+      expect(parse(lex('two=1+1;')).partsOfSource[0]).toStrictEqual(
         {
           type: 'Assignment',
           name: 'two',
@@ -220,7 +220,7 @@ describe('構文解析', () => {
   })
   describe('if', () => {
     test('文が0個', () => {
-      expect(parse(lex('if(true) { }')).statements[0]).toStrictEqual(
+      expect(parse(lex('if(true) { }')).partsOfSource[0]).toStrictEqual(
         {
           type: 'If',
           condition: { type: 'BoolLiteral', value: true },
@@ -229,7 +229,7 @@ describe('構文解析', () => {
       )
     })
     test('文が1個', () => {
-      expect(parse(lex('if(true) { 1; }')).statements[0]).toStrictEqual(
+      expect(parse(lex('if(true) { 1; }')).partsOfSource[0]).toStrictEqual(
         {
           type: 'If',
           condition: { type: 'BoolLiteral', value: true },
@@ -238,7 +238,7 @@ describe('構文解析', () => {
       )
     })
     test('文が2個', () => {
-      expect(parse(lex('if(true) { 1; 2; }')).statements[0]).toStrictEqual(
+      expect(parse(lex('if(true) { 1; 2; }')).partsOfSource[0]).toStrictEqual(
         {
           type: 'If',
           condition: { type: 'BoolLiteral', value: true },
@@ -266,7 +266,7 @@ describe('構文解析', () => {
     test('ifの後の式', () => {
       expect(parse(lex('if(true){ } 123;'))).toStrictEqual({
         type: 'Source',
-        statements: [
+        partsOfSource: [
           {
             type: 'If',
             condition: { type: 'BoolLiteral', value: true },
@@ -282,7 +282,7 @@ describe('構文解析', () => {
   })
   describe('関数定義', () => {
     test('引数が0個、文が0個', () => {
-      expect(parse(lex('def funcname() { }')).statements[0]).toStrictEqual(
+      expect(parse(lex('def funcname() { }')).partsOfSource[0]).toStrictEqual(
         {
           type: 'FuncDef',
           name: 'funcname',
@@ -292,7 +292,7 @@ describe('構文解析', () => {
       )
     })
     test('引数が1個、文が0個', () => {
-      expect(parse(lex('def funcname(argument) { }')).statements[0]).toStrictEqual(
+      expect(parse(lex('def funcname(argument) { }')).partsOfSource[0]).toStrictEqual(
         {
           type: 'FuncDef',
           name: 'funcname',
@@ -302,7 +302,7 @@ describe('構文解析', () => {
       )
     })
     test('引数が2個、文が0個', () => {
-      expect(parse(lex('def funcname(xxx, yyy) { }')).statements[0]).toStrictEqual(
+      expect(parse(lex('def funcname(xxx, yyy) { }')).partsOfSource[0]).toStrictEqual(
         {
           type: 'FuncDef',
           name: 'funcname',
@@ -312,7 +312,7 @@ describe('構文解析', () => {
       )
     })
     test('引数が0個、文が1個', () => {
-      expect(parse(lex('def funcname() { 123; }')).statements[0]).toStrictEqual(
+      expect(parse(lex('def funcname() { 123; }')).partsOfSource[0]).toStrictEqual(
         {
           type: 'FuncDef',
           name: 'funcname',
@@ -324,7 +324,7 @@ describe('構文解析', () => {
       )
     })
     test('引数が0個、文が2個', () => {
-      expect(parse(lex('def funcname() { 123; 456; }')).statements[0]).toStrictEqual({
+      expect(parse(lex('def funcname() { 123; 456; }')).partsOfSource[0]).toStrictEqual({
         type: 'FuncDef',
         name: 'funcname',
         arguments: [],

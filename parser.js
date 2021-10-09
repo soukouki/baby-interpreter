@@ -286,7 +286,7 @@ function parseFunctionDefinition(tokens) {
 }
 
 function parseSource(tokens) {
-  const statements = []
+  const partsOfSource = []
   let readPosition = 0
   while (readPosition < tokens.length) {
     const {
@@ -294,7 +294,7 @@ function parseSource(tokens) {
       parsedTokensCount: parsedExpressionTokensCount,
     } = parseStatement(tokens.slice(readPosition))
     if (stmt) {
-      statements.push(stmt)
+      partsOfSource.push(stmt)
       readPosition += parsedExpressionTokensCount
       continue
     }
@@ -303,7 +303,7 @@ function parseSource(tokens) {
       parsedTokensCount: parsedDefineFunctionTokensCount,
     } = parseFunctionDefinition(tokens.slice(readPosition))
     if (defineFunction) {
-      statements.push(defineFunction)
+      partsOfSource.push(defineFunction)
       readPosition += parsedDefineFunctionTokensCount
       continue
     }
@@ -315,7 +315,7 @@ function parseSource(tokens) {
   }
   return {
     type: 'Source',
-    statements,
+    partsOfSource,
   }
 }
 
