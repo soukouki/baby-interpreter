@@ -74,15 +74,15 @@ module.exports.lexicalAnalyse = function (source) {
         break
       default:
         if (isDigit(source[readPosition])) {
-          const digitsCount = countDigits(source.substring(readPosition))
+          const digitsCount = countDigits(source.slice(readPosition))
           tokens.push({
             type: 'Int',
-            value: parseInt(source.substring(readPosition, readPosition + digitsCount), 10),
+            value: parseInt(source.slice(readPosition, readPosition + digitsCount), 10),
           })
           readPosition += digitsCount
         } else if (isIdentChar(source[readPosition])) {
-          const identCharsCount = countIdentChars(source.substring(readPosition))
-          const name = source.substring(readPosition, readPosition + identCharsCount)
+          const identCharsCount = countIdentChars(source.slice(readPosition))
+          const name = source.slice(readPosition, readPosition + identCharsCount)
           switch (name) {
             case 'if':
               tokens.push({
