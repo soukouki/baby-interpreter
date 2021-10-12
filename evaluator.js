@@ -78,7 +78,7 @@ function evaluateAdd(ast, environment) {
   const {
     result: rightResult,
     environment: rightEnvironment,
-  // eslint-disable-next-line no-use-before-define
+    // eslint-disable-next-line no-use-before-define
   } = evaluate(ast.right, leftEnvironment)
   if (rightResult.isError) {
     return { result: rightResult, environment: rightEnvironment }
@@ -116,19 +116,28 @@ function wrapObject(obj) {
   }
 }
 
-function callFunction(func, name, args, env) {
+function evaluateEmbeddedFunction(func, args) {
+  return wrapObject(func.function(...args.map(unwrapObject)))
+}
+
+function evaluateDefinedFunction(func, args, env) {
+  // eslint-disable-next-line no-use-before-define
+  return evaluateMultiAST(func.statements, {
+    variables: new Map(
+      [...Array(func.argumentsCount).keys()]
+        .map((i) => [func.arguments[i], args[i]]),
+    ),
+    functions: env.functions,
+  }).result
+}
+
+function computeFunction(func, name, args, env) {
   switch (func.type) {
     case 'EmbeddedFunction':
-      return wrapObject(func.function(...args.map(unwrapObject)))
+      return evaluateEmbeddedFunction(func, args)
     case 'DefinedFunction':
       // eslint-disable-next-line no-use-before-define
-      return evaluateMultiAST(func.statements, {
-        variables: new Map(
-          [...Array(func.argumentsCount).keys()]
-            .map((i) => [func.arguments[i], args[i]]),
-        ),
-        functions: env.functions,
-      }).result
+      return evaluateDefinedFunction(func, args, env)
     default:
       return {
         type: 'FunctionTypeError',
@@ -183,7 +192,7 @@ function evaluateFunctionCalling(calling, environment) {
       environment: argumentsEvaluatedEnvironment,
     }
   }
-  const result = callFunction(
+  const result = computeFunction(
     func, calling.name, evaluatedArguments, argumentsEvaluatedEnvironment,
   )
   return {
