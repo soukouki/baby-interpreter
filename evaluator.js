@@ -23,6 +23,26 @@ function typeError(type, environment) {
   }
 }
 
+function argumentsCountError(name, want, got) {
+  return {
+    result: {
+      type: 'ArgumentsCountError',
+      isError: true,
+      message: `関数'${name}'は${want}個の引数を取りますが、渡されたのは${got}個です`,
+    },
+  }
+}
+
+function undefinedFunctionError(name) {
+  return {
+    result: {
+      type: 'UndefinedFunctionError',
+      isError: true,
+      message: `関数'${name}'は存在しません`,
+    },
+  }
+}
+
 function evaluateIfStatement(ast, initialEnvironment) {
   const { condition, statements } = ast
   // eslint-disable-next-line no-use-before-define
@@ -146,23 +166,11 @@ function evaluateArguments(args, environment) {
 function evaluateFunctionCalling(calling, environment) {
   const func = environment.functions.get(calling.name)
   if (func === undefined) {
-    return {
-      result: {
-        type: 'UndefinedFunctionError',
-        isError: true,
-        message: `関数'${calling.name}'は存在しません`,
-      },
-    }
+    return undefinedFunctionError(calling.name)
   }
   const args = calling.arguments
   if (func.argumentsCount !== args.length) {
-    return {
-      result: {
-        type: 'ArgumentsCountError',
-        isError: true,
-        message: `関数'${calling.name}'は${func.argumentsCount}個の引数を取りますが、渡されたのは${calling.arguments.length}個です`,
-      },
-    }
+    return argumentsCountError(calling.name, func.argumentsCount, calling.arguments.length)
   }
   const {
     error,
