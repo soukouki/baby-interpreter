@@ -118,6 +118,31 @@ function callFunction(func, name, args, env) {
   }
 }
 
+function evaluateArguments(args, environment) {
+  const evaluatedArguments = []
+  let argumentsEvaluatedEnvironment = environment
+  // eslint-disable-next-line no-restricted-syntax
+  for (const stmt of args) {
+    const {
+      result: argResult, environment: argEnvironment,
+    // eslint-disable-next-line no-use-before-define
+    } = evaluate(stmt, argumentsEvaluatedEnvironment)
+    if (argResult.isError) {
+      return {
+        error: argResult,
+        environment: argEnvironment,
+      }
+    }
+    evaluatedArguments.push(argResult)
+    argumentsEvaluatedEnvironment = argEnvironment
+  }
+
+  return {
+    evaluatedArguments,
+    environment: argumentsEvaluatedEnvironment,
+  }
+}
+
 function evaluateFunctionCalling(calling, environment) {
   const func = environment.functions.get(calling.name)
   if (func === undefined) {
@@ -139,22 +164,16 @@ function evaluateFunctionCalling(calling, environment) {
       },
     }
   }
-  const evaluatedArguments = []
-  let argumentsEvaluatedEnvironment = environment
-  // eslint-disable-next-line no-restricted-syntax
-  for (const stmt of args) {
-    const {
-      result: argResult, environment: argEnvironment,
-    // eslint-disable-next-line no-use-before-define
-    } = evaluate(stmt, argumentsEvaluatedEnvironment)
-    if (argResult.isError) {
-      return {
-        result: argResult,
-        environment: argEnvironment,
-      }
+  const {
+    error,
+    evaluatedArguments,
+    environment: argumentsEvaluatedEnvironment,
+  } = evaluateArguments(args, environment)
+  if (error) {
+    return {
+      result: error,
+      environment: argumentsEvaluatedEnvironment,
     }
-    evaluatedArguments.push(argResult)
-    argumentsEvaluatedEnvironment = argEnvironment
   }
   const result = callFunction(
     func, calling.name, evaluatedArguments, argumentsEvaluatedEnvironment,
