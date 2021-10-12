@@ -200,146 +200,146 @@ describe('評価', () => {
   })
   describe('組み込み関数', () => {
     test('組み込み関数が呼べることの確認', () => {
-      const embededFunction = jest.fn()
-      const environmentWithEmbededFunction = {
+      const embeddedFunction = jest.fn()
+      const environmentWithEmbeddedFunction = {
         variables: new Map(),
         functions: new Map([
-          ['embeded', {
-            type: 'EmbededFunction',
+          ['embedded', {
+            type: 'EmbeddedFunction',
             argumentsCount: 0,
-            function: embededFunction,
+            function: embeddedFunction,
           }],
         ]),
       }
-      expect(evaluate(lexAndParse('embeded();'), environmentWithEmbededFunction)).toStrictEqual(
+      expect(evaluate(lexAndParse('embedded();'), environmentWithEmbeddedFunction)).toStrictEqual(
         {
           result: nullValue,
-          environment: environmentWithEmbededFunction,
+          environment: environmentWithEmbeddedFunction,
         },
       )
-      expect(embededFunction.mock.calls).toEqual([[]])
+      expect(embeddedFunction.mock.calls).toEqual([[]])
     })
     describe('組み込み関数に引数を渡せることの確認', () => {
       test('整数', () => {
-        const embededFunction = jest.fn()
-        const environmentWithEmbededFunction = {
+        const embeddedFunction = jest.fn()
+        const environmentWithEmbeddedFunction = {
           variables: new Map(),
           functions: new Map([
-            ['embeded', {
-              type: 'EmbededFunction',
+            ['embedded', {
+              type: 'EmbeddedFunction',
               argumentsCount: 1,
-              function: embededFunction,
+              function: embeddedFunction,
             }],
           ]),
         }
-        expect(evaluate(lexAndParse('embeded(123);'), environmentWithEmbededFunction)).toStrictEqual(
+        expect(evaluate(lexAndParse('embedded(123);'), environmentWithEmbeddedFunction)).toStrictEqual(
           {
             result: nullValue,
-            environment: environmentWithEmbededFunction,
+            environment: environmentWithEmbeddedFunction,
           },
         )
-        expect(embededFunction.mock.calls).toEqual([[123]])
+        expect(embeddedFunction.mock.calls).toEqual([[123]])
       })
       test('真偽値', () => {
-        const embededFunction = jest.fn()
-        const environmentWithEmbededFunction = {
+        const embeddedFunction = jest.fn()
+        const environmentWithEmbeddedFunction = {
           variables: new Map(),
           functions: new Map([
-            ['embeded', {
-              type: 'EmbededFunction',
+            ['embedded', {
+              type: 'EmbeddedFunction',
               argumentsCount: 2,
-              function: embededFunction,
+              function: embeddedFunction,
             }],
           ]),
         }
-        expect(evaluate(lexAndParse('embeded(true, false);'), environmentWithEmbededFunction)).toStrictEqual(
+        expect(evaluate(lexAndParse('embedded(true, false);'), environmentWithEmbeddedFunction)).toStrictEqual(
           {
             result: nullValue,
-            environment: environmentWithEmbededFunction,
+            environment: environmentWithEmbeddedFunction,
           },
         )
-        expect(embededFunction.mock.calls).toEqual([[true, false]])
+        expect(embeddedFunction.mock.calls).toEqual([[true, false]])
       })
       test('null', () => {
-        const embededFunction = jest.fn()
-        const environmentWithEmbededFunction = {
+        const embeddedFunction = jest.fn()
+        const environmentWithEmbeddedFunction = {
           variables: new Map(),
           functions: new Map([
-            ['embeded', {
-              type: 'EmbededFunction',
+            ['embedded', {
+              type: 'EmbeddedFunction',
               argumentsCount: 2,
-              function: embededFunction,
+              function: embeddedFunction,
             }],
           ]),
         }
-        expect(evaluate(lexAndParse('embeded(null, 1+2);'), environmentWithEmbededFunction)).toStrictEqual(
+        expect(evaluate(lexAndParse('embedded(null, 1+2);'), environmentWithEmbeddedFunction)).toStrictEqual(
           {
             result: nullValue,
-            environment: environmentWithEmbededFunction,
+            environment: environmentWithEmbeddedFunction,
           },
         )
-        expect(embededFunction.mock.calls).toEqual([[null, 3]])
+        expect(embeddedFunction.mock.calls).toEqual([[null, 3]])
       })
     })
     describe('組み込み関数から値が返ることの確認', () => {
-      const embededFunction = jest.fn()
-      const environmentWithEmbededFunction = {
+      const embeddedFunction = jest.fn()
+      const environmentWithEmbeddedFunction = {
         variables: new Map(),
         functions: new Map([
-          ['embeded', {
-            type: 'EmbededFunction',
+          ['embedded', {
+            type: 'EmbeddedFunction',
             argumentsCount: 0,
-            function: embededFunction,
+            function: embeddedFunction,
           }],
         ]),
       }
       test('整数', () => {
-        embededFunction.mockReturnValue(123)
-        expect(evaluate(lexAndParse('embeded();'), environmentWithEmbededFunction)).toStrictEqual(
+        embeddedFunction.mockReturnValue(123)
+        expect(evaluate(lexAndParse('embedded();'), environmentWithEmbeddedFunction)).toStrictEqual(
           {
             result: intValue(123),
-            environment: environmentWithEmbededFunction,
+            environment: environmentWithEmbeddedFunction,
           },
         )
-        expect(embededFunction).toHaveBeenCalled()
+        expect(embeddedFunction).toHaveBeenCalled()
       })
       describe('真偽値', () => {
         test('true', () => {
-          embededFunction.mockReturnValue(true)
-          expect(evaluate(lexAndParse('embeded();'), environmentWithEmbededFunction)).toStrictEqual(
+          embeddedFunction.mockReturnValue(true)
+          expect(evaluate(lexAndParse('embedded();'), environmentWithEmbeddedFunction)).toStrictEqual(
             {
               result: boolValue(true),
-              environment: environmentWithEmbededFunction,
+              environment: environmentWithEmbeddedFunction,
             },
           )
-          expect(embededFunction).toHaveBeenCalled()
+          expect(embeddedFunction).toHaveBeenCalled()
         })
         test('false', () => {
-          embededFunction.mockReturnValue(false)
-          expect(evaluate(lexAndParse('embeded();'), environmentWithEmbededFunction)).toStrictEqual(
+          embeddedFunction.mockReturnValue(false)
+          expect(evaluate(lexAndParse('embedded();'), environmentWithEmbeddedFunction)).toStrictEqual(
             {
               result: boolValue(false),
-              environment: environmentWithEmbededFunction,
+              environment: environmentWithEmbeddedFunction,
             },
           )
-          expect(embededFunction).toHaveBeenCalled()
+          expect(embeddedFunction).toHaveBeenCalled()
         })
       })
       test('null', () => {
-        embededFunction.mockReturnValue(null)
-        expect(evaluate(lexAndParse('embeded();'), environmentWithEmbededFunction)).toStrictEqual(
+        embeddedFunction.mockReturnValue(null)
+        expect(evaluate(lexAndParse('embedded();'), environmentWithEmbeddedFunction)).toStrictEqual(
           {
             result: nullValue,
-            environment: environmentWithEmbededFunction,
+            environment: environmentWithEmbeddedFunction,
           },
         )
-        expect(embededFunction).toHaveBeenCalled()
+        expect(embeddedFunction).toHaveBeenCalled()
       })
     })
     test('引数でエラーが起きたときの処理', () => {
       const functionDefinedEnvironment = {
         variables: new Map(),
-        functions: new Map([['func', { type: 'EmbededFunction', argumentsCount: 1 }]]),
+        functions: new Map([['func', { type: 'EmbeddedFunction', argumentsCount: 1 }]]),
       }
       expect(evaluate(lexAndParse('func(1+null);'), functionDefinedEnvironment).result.type).toBe('TypeError')
     })
@@ -429,25 +429,25 @@ describe('評価', () => {
       )
     })
     test('定義した関数の中で自身の関数を呼べることの確認', () => {
-      const embededFunctions = [
+      const embeddedFunctions = [
         ['notequal', {
-          type: 'EmbededFunction',
+          type: 'EmbeddedFunction',
           argumentsCount: 2,
           function: (a, b) => a !== b,
         }],
         ['or', {
-          type: 'EmbededFunction',
+          type: 'EmbeddedFunction',
           argumentsCount: 2,
           function: (a, b) => a || b,
         }],
       ]
-      const definedEmbededFunctionEnvironment = {
+      const definedEmbeddedFunctionEnvironment = {
         variables: new Map(),
-        functions: new Map(embededFunctions),
+        functions: new Map(embeddedFunctions),
       }
       expect(evaluate(
         lexAndParse('def func(n) { if(notequal(n, 5)) { res = func(n+1); } or(res, n); } func(0);'),
-        definedEmbededFunctionEnvironment,
+        definedEmbeddedFunctionEnvironment,
       ).result).toEqual(
         intValue(5),
       )
@@ -463,17 +463,17 @@ describe('評価', () => {
       variables: new Map(),
       functions: new Map([
         ['gt', {
-          type: 'EmbededFunction',
+          type: 'EmbeddedFunction',
           argumentsCount: 2,
           function: (a, b) => a < b,
         }],
         ['or', {
-          type: 'EmbededFunction',
+          type: 'EmbeddedFunction',
           argumentsCount: 2,
           function: (a, b) => a || b,
         }],
         ['sub', {
-          type: 'EmbededFunction',
+          type: 'EmbeddedFunction',
           argumentsCount: 2,
           function: (a, b) => a - b,
         }],

@@ -1,6 +1,6 @@
 const { intValue, nullValue, boolValue } = require('./value')
 
-function evaluaterError(ast, environment) {
+function evaluatorError(ast, environment) {
   return {
     result: {
       type: 'EvaluatorError',
@@ -98,7 +98,7 @@ function wrapObject(obj) {
 
 function callFunction(func, name, args, env) {
   switch (func.type) {
-    case 'EmbededFunction':
+    case 'EmbeddedFunction':
       return wrapObject(func.function(...args.map(unwrapObject)))
     case 'DefinedFunction':
       // eslint-disable-next-line no-use-before-define
@@ -245,7 +245,7 @@ function evaluate(ast, environment) {
         environment,
       }
     default:
-      return evaluaterError(ast, environment)
+      return evaluatorError(ast, environment)
   }
 }
 
