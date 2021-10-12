@@ -1,6 +1,6 @@
 const { intValue, nullValue, boolValue } = require('./value')
 
-function evaluaterError(ast, environment) {
+function evaluatorError(ast, environment) {
   return {
     result: {
       type: 'EvaluatorError',
@@ -20,6 +20,26 @@ function typeError(type, environment) {
       message: `無効な型'${type}'が渡されました`,
     },
     environment,
+  }
+}
+
+function argumentsCountError(name, want, got) {
+  return {
+    result: {
+      type: 'ArgumentsCountError',
+      isError: true,
+      message: `関数'${name}'は${want}個の引数を取りますが、渡されたのは${got}個です`,
+    },
+  }
+}
+
+function undefinedFunctionError(name) {
+  return {
+    result: {
+      type: 'UndefinedFunctionError',
+      isError: true,
+      message: `関数'${name}'は存在しません`,
+    },
   }
 }
 
@@ -58,7 +78,7 @@ function evaluateAdd(ast, environment) {
   const {
     result: rightResult,
     environment: rightEnvironment,
-  // eslint-disable-next-line no-use-before-define
+    // eslint-disable-next-line no-use-before-define
   } = evaluate(ast.right, leftEnvironment)
   if (rightResult.isError) {
     return { result: rightResult, environment: rightEnvironment }
@@ -96,19 +116,28 @@ function wrapObject(obj) {
   }
 }
 
-function callFunction(func, name, args, env) {
+function evaluateEmbeddedFunction(func, args) {
+  return wrapObject(func.function(...args.map(unwrapObject)))
+}
+
+function evaluateDefinedFunction(func, args, env) {
+  // eslint-disable-next-line no-use-before-define
+  return evaluateMultiAST(func.statements, {
+    variables: new Map(
+      [...Array(func.argumentsCount).keys()]
+        .map((i) => [func.arguments[i], args[i]]),
+    ),
+    functions: env.functions,
+  }).result
+}
+
+function computeFunction(func, name, args, env) {
   switch (func.type) {
-    case 'EmbededFunction':
-      return wrapObject(func.function(...args.map(unwrapObject)))
+    case 'EmbeddedFunction':
+      return evaluateEmbeddedFunction(func, args)
     case 'DefinedFunction':
       // eslint-disable-next-line no-use-before-define
-      return evaluateMultiAST(func.statements, {
-        variables: new Map(
-          [...Array(func.argumentsCount).keys()]
-            .map((i) => [func.arguments[i], args[i]]),
-        ),
-        functions: env.functions,
-      }).result
+      return evaluateDefinedFunction(func, args, env)
     default:
       return {
         type: 'FunctionTypeError',
@@ -118,27 +147,7 @@ function callFunction(func, name, args, env) {
   }
 }
 
-function evaluateFunctionCalling(calling, environment) {
-  const func = environment.functions.get(calling.name)
-  if (func === undefined) {
-    return {
-      result: {
-        type: 'UndefinedFunctionError',
-        isError: true,
-        message: `関数'${calling.name}'は存在しません`,
-      },
-    }
-  }
-  const args = calling.arguments
-  if (func.argumentsCount !== args.length) {
-    return {
-      result: {
-        type: 'ArgumentsCountError',
-        isError: true,
-        message: `関数'${calling.name}'は${func.argumentsCount}個の引数を取りますが、渡されたのは${calling.arguments.length}個です`,
-      },
-    }
-  }
+function evaluateArguments(args, environment) {
   const evaluatedArguments = []
   let argumentsEvaluatedEnvironment = environment
   // eslint-disable-next-line no-restricted-syntax
@@ -149,14 +158,41 @@ function evaluateFunctionCalling(calling, environment) {
     } = evaluate(stmt, argumentsEvaluatedEnvironment)
     if (argResult.isError) {
       return {
-        result: argResult,
+        error: argResult,
         environment: argEnvironment,
       }
     }
     evaluatedArguments.push(argResult)
     argumentsEvaluatedEnvironment = argEnvironment
   }
-  const result = callFunction(
+
+  return {
+    evaluatedArguments,
+    environment: argumentsEvaluatedEnvironment,
+  }
+}
+
+function evaluateFunctionCalling(calling, environment) {
+  const func = environment.functions.get(calling.name)
+  if (func === undefined) {
+    return undefinedFunctionError(calling.name)
+  }
+  const args = calling.arguments
+  if (func.argumentsCount !== args.length) {
+    return argumentsCountError(calling.name, func.argumentsCount, calling.arguments.length)
+  }
+  const {
+    error,
+    evaluatedArguments,
+    environment: argumentsEvaluatedEnvironment,
+  } = evaluateArguments(args, environment)
+  if (error) {
+    return {
+      result: error,
+      environment: argumentsEvaluatedEnvironment,
+    }
+  }
+  const result = computeFunction(
     func, calling.name, evaluatedArguments, argumentsEvaluatedEnvironment,
   )
   return {
@@ -245,7 +281,7 @@ function evaluate(ast, environment) {
         environment,
       }
     default:
-      return evaluaterError(ast, environment)
+      return evaluatorError(ast, environment)
   }
 }
 

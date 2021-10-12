@@ -23,7 +23,7 @@ let environment = {
   variables: new Map(),
   functions: new Map([
     ['print', {
-      type: 'EmbededFunction',
+      type: 'EmbeddedFunction',
       argumentsCount: 1,
       function: console.log,
     }],
