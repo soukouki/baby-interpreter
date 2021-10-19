@@ -1,33 +1,28 @@
 const { intValue, nullValue, boolValue } = require('./value')
 
-function evaluatorError(ast, environment) {
+function evaluatorError(ast) {
   return {
-    result: {
+    error: {
       type: 'EvaluatorError',
-      isError: true,
       message: `無効なast'${ast.type}'が渡されました`,
       ast,
     },
-    environment,
   }
 }
 
-function typeError(type, environment) {
+function typeError(type) {
   return {
-    result: {
+    error: {
       type: 'TypeError',
-      isError: true,
       message: `無効な型'${type}'が渡されました`,
     },
-    environment,
   }
 }
 
 function argumentsCountError(name, want, got) {
   return {
-    result: {
+    error: {
       type: 'ArgumentsCountError',
-      isError: true,
       message: `関数'${name}'は${want}個の引数を取りますが、渡されたのは${got}個です`,
     },
   }
@@ -35,9 +30,8 @@ function argumentsCountError(name, want, got) {
 
 function undefinedFunctionError(name) {
   return {
-    result: {
+    error: {
       type: 'UndefinedFunctionError',
-      isError: true,
       message: `関数'${name}'は存在しません`,
     },
   }
@@ -46,10 +40,10 @@ function undefinedFunctionError(name) {
 function evaluateIfStatement(ast, initialEnvironment) {
   const { condition, statements } = ast
   // eslint-disable-next-line no-use-before-define
-  const { result, environment: halfwayEnvironment } = evaluate(condition, initialEnvironment)
-  if (result.isError) {
+  const { result, error, environment: halfwayEnvironment } = evaluate(condition, initialEnvironment)
+  if (error) {
     return {
-      result,
+      error,
       environment: halfwayEnvironment,
     }
   }
@@ -66,25 +60,27 @@ function evaluateIfStatement(ast, initialEnvironment) {
 function evaluateAdd(ast, environment) {
   const {
     result: leftResult,
+    error: leftError,
     environment: leftEnvironment,
     // eslint-disable-next-line no-use-before-define
   } = evaluate(ast.left, environment)
-  if (leftResult.isError) {
-    return { result: leftResult, environment: leftEnvironment }
+  if (leftError) {
+    return { error: leftError, environment }
   }
   if (leftResult.type !== 'IntValue') {
-    return typeError(leftResult.type)
+    return typeError(leftResult.type, environment)
   }
   const {
     result: rightResult,
+    error: rightError,
     environment: rightEnvironment,
     // eslint-disable-next-line no-use-before-define
   } = evaluate(ast.right, leftEnvironment)
-  if (rightResult.isError) {
-    return { result: rightResult, environment: rightEnvironment }
+  if (rightError) {
+    return { error: rightError, environment: rightEnvironment }
   }
   if (rightResult.type !== 'IntValue') {
-    return typeError(rightResult.type)
+    return typeError(rightResult.type, environment)
   }
   return {
     result: intValue(leftResult.value + rightResult.value),
@@ -117,7 +113,9 @@ function wrapObject(obj) {
 }
 
 function evaluateEmbeddedFunction(func, args) {
-  return wrapObject(func.function(...args.map(unwrapObject)))
+  return {
+    result: wrapObject(func.function(...args.map(unwrapObject))),
+  }
 }
 
 function evaluateDefinedFunction(func, args, env) {
@@ -128,7 +126,7 @@ function evaluateDefinedFunction(func, args, env) {
         .map((i) => [func.arguments[i], args[i]]),
     ),
     functions: env.functions,
-  }).result
+  })
 }
 
 function computeFunction(func, name, args, env) {
@@ -136,13 +134,13 @@ function computeFunction(func, name, args, env) {
     case 'EmbeddedFunction':
       return evaluateEmbeddedFunction(func, args)
     case 'DefinedFunction':
-      // eslint-disable-next-line no-use-before-define
       return evaluateDefinedFunction(func, args, env)
     default:
       return {
-        type: 'FunctionTypeError',
-        isError: true,
-        message: `関数'${name}'の型が無効な型'${func.type}'です`,
+        error: {
+          type: 'FunctionTypeError',
+          message: `関数'${name}'の型が無効な型'${func.type}'です`,
+        },
       }
   }
 }
@@ -153,12 +151,12 @@ function evaluateArguments(args, environment) {
   // eslint-disable-next-line no-restricted-syntax
   for (const stmt of args) {
     const {
-      result: argResult, environment: argEnvironment,
+      result: argResult, error: argError, environment: argEnvironment,
     // eslint-disable-next-line no-use-before-define
     } = evaluate(stmt, argumentsEvaluatedEnvironment)
-    if (argResult.isError) {
+    if (argError) {
       return {
-        error: argResult,
+        error: argError,
         environment: argEnvironment,
       }
     }
@@ -182,19 +180,25 @@ function evaluateFunctionCalling(calling, environment) {
     return argumentsCountError(calling.name, func.argumentsCount, calling.arguments.length)
   }
   const {
-    error,
+    error: evaluatingArgumentsError,
     evaluatedArguments,
     environment: argumentsEvaluatedEnvironment,
   } = evaluateArguments(args, environment)
-  if (error) {
+  if (evaluatingArgumentsError) {
     return {
-      result: error,
+      error: evaluatingArgumentsError,
       environment: argumentsEvaluatedEnvironment,
     }
   }
-  const result = computeFunction(
+  const { result, error: computingFunctionError } = computeFunction(
     func, calling.name, evaluatedArguments, argumentsEvaluatedEnvironment,
   )
+  if (computingFunctionError) {
+    return {
+      error: computingFunctionError,
+      environment: argumentsEvaluatedEnvironment,
+    }
+  }
   return {
     result,
     environment: argumentsEvaluatedEnvironment,
@@ -226,10 +230,14 @@ function evaluateMultiAST(partsOfSource, environment) {
   // またreduceでは条件分岐が複雑になり書きづらいので、for文を使って処理しています
   // eslint-disable-next-line no-restricted-syntax
   for (const part of partsOfSource) {
-    // eslint-disable-next-line no-use-before-define
-    const { result: evaluatedResult, environment: evaluatedEnvironment } = evaluate(part, env)
-    if (evaluatedResult.isError) {
-      return { result: evaluatedResult, environment: evaluatedEnvironment }
+    const {
+      result: evaluatedResult,
+      error: evaluatingError,
+      environment: evaluatedEnvironment,
+      // eslint-disable-next-line no-use-before-define
+    } = evaluate(part, env)
+    if (evaluatingError) {
+      return { error: evaluatingError, environment: evaluatedEnvironment }
     }
     result = evaluatedResult
     env = evaluatedEnvironment

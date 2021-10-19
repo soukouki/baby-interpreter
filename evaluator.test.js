@@ -15,7 +15,7 @@ describe('評価', () => {
       expect(evaluate({
         type: 'Source',
         partsOfSource: [{ type: 'UnknownAST' }],
-      }, emptyEnvironment).result.type).toBe('EvaluatorError')
+      }, emptyEnvironment).error.type).toBe('EvaluatorError')
     })
   })
   describe('各種リテラル', () => {
@@ -23,7 +23,6 @@ describe('評価', () => {
       expect(evaluate(lexAndParse('123;'), emptyEnvironment).result).toStrictEqual(
         {
           type: 'IntValue',
-          isError: false,
           value: 123,
         },
       )
@@ -33,7 +32,6 @@ describe('評価', () => {
         expect(evaluate(lexAndParse('true;'), emptyEnvironment).result).toStrictEqual(
           {
             type: 'BoolValue',
-            isError: false,
             value: true,
           },
         )
@@ -43,7 +41,6 @@ describe('評価', () => {
           {
             result: {
               type: 'BoolValue',
-              isError: false,
               value: false,
             },
             environment: emptyEnvironment,
@@ -56,7 +53,6 @@ describe('評価', () => {
         {
           result: {
             type: 'NullValue',
-            isError: false,
           },
           environment: emptyEnvironment,
         },
@@ -76,11 +72,11 @@ describe('評価', () => {
       expect(evaluate(lexAndParse('a+1;'), {
         variables: new Map([['a', { type: 'NullValue' }]]),
         functions: new Map(),
-      }).result.type).toBe('TypeError')
+      }).error.type).toBe('TypeError')
     })
     test('エラー時にエラーを上げていく処理', () => {
-      expect(evaluate(lexAndParse('(1+non)+23;'), emptyEnvironment).result.type).toBe('TypeError')
-      expect(evaluate(lexAndParse('1+(non+23);'), emptyEnvironment).result.type).toBe('TypeError')
+      expect(evaluate(lexAndParse('(1+non)+23;'), emptyEnvironment).error.type).toBe('TypeError')
+      expect(evaluate(lexAndParse('1+(non+23);'), emptyEnvironment).error.type).toBe('TypeError')
     })
   })
   test('複数の文', () => {
@@ -99,7 +95,6 @@ describe('評価', () => {
           variables: new Map([
             ['a', {
               type: 'IntValue',
-              isError: false,
               value: 1,
             }],
           ]),
@@ -191,10 +186,10 @@ describe('評価', () => {
     })
     describe('エラーが起きる計算の処理', () => {
       test('条件分でエラー', () => {
-        expect(evaluate(lexAndParse('if(1+true){ }'), emptyEnvironment).result.type).toBe('TypeError')
+        expect(evaluate(lexAndParse('if(1+true){ }'), emptyEnvironment).error.type).toBe('TypeError')
       })
       test('実行部分でエラー', () => {
-        expect(evaluate(lexAndParse('if(true){ 1+true; 1234; }'), emptyEnvironment).result.type).toBe('TypeError')
+        expect(evaluate(lexAndParse('if(true){ 1+true; 1234; }'), emptyEnvironment).error.type).toBe('TypeError')
       })
     })
   })
@@ -341,7 +336,7 @@ describe('評価', () => {
         variables: new Map(),
         functions: new Map([['func', { type: 'EmbeddedFunction', argumentsCount: 1 }]]),
       }
-      expect(evaluate(lexAndParse('func(1+null);'), functionDefinedEnvironment).result.type).toBe('TypeError')
+      expect(evaluate(lexAndParse('func(1+null);'), functionDefinedEnvironment).error.type).toBe('TypeError')
     })
   })
   describe('関数定義', () => {
@@ -454,7 +449,7 @@ describe('評価', () => {
     })
     describe('エラー処理', () => {
       test('実行中のエラー', () => {
-        expect(evaluate(lexAndParse('def func(){ 1+true; 123; } func();'), emptyEnvironment).result.type).toBe('TypeError')
+        expect(evaluate(lexAndParse('def func(){ 1+true; 123; } func();'), emptyEnvironment).error.type).toBe('TypeError')
       })
     })
   })
