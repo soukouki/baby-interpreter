@@ -20,6 +20,8 @@
 |sub|subtract|引き算|
 |mul|multiply|掛け算|
 |div|divide|割り算|
+|lt|lesser than|小なり|
+|gt|grater than|大なり|
 
 
 構文について
