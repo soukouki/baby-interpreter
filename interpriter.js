@@ -66,7 +66,7 @@ let environment = {
       continue
     }
     const resultObject = evaluate(ast, environment)
-    if (resultObject.result.isError) {
+    if (resultObject.error) {
       console.error(stringify(resultObject))
       continue
     }
