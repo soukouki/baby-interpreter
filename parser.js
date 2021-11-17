@@ -1,3 +1,4 @@
+// リテラルの構文解析
 function parseLiteral(tokens) {
   const head = tokens[0]
   switch (head?.type) {
@@ -31,6 +32,7 @@ function parseLiteral(tokens) {
   }
 }
 
+// 変数参照の構文解析
 function parseValue(tokens) {
   const head = tokens[0]
   if (head?.type === 'Ident') {
@@ -45,6 +47,7 @@ function parseValue(tokens) {
   return parseLiteral(tokens)
 }
 
+// 優先順位を変える丸括弧の構文解析
 function parseParenthesisExpression(tokens) {
   if (tokens[0]?.type === 'LParen') {
     // eslint-disable-next-line no-use-before-define
@@ -56,6 +59,8 @@ function parseParenthesisExpression(tokens) {
   return parseValue(tokens)
 }
 
+// コンマで区切られた式(例えば引数リスト)の構文解析
+// `aaa, b+c` のようなものを解析する
 function parseCommaSeparatedExpressions(tokens) {
   const {
     expression: firstExpression,
@@ -86,6 +91,8 @@ function parseCommaSeparatedExpressions(tokens) {
   }
 }
 
+// 関数呼び出しの構文解析
+// `func(arg1, arg2)` のようなものを解析する
 function parseFunctionCallingExpression(tokens) {
   const name = tokens[0]
   if (name?.type !== 'Ident' || tokens[1]?.type !== 'LParen') {
@@ -109,6 +116,8 @@ function parseFunctionCallingExpression(tokens) {
   }
 }
 
+// 足し算と引き算の構文解析
+// 引き算は勉強会中で機能追加をする
 function parseAddSubExpression(tokens) {
   let { expression: left, parsedTokensCount: readPosition } = parseFunctionCallingExpression(tokens)
   while (tokens[readPosition]?.type === 'Plus') {
@@ -125,10 +134,14 @@ function parseAddSubExpression(tokens) {
   return { expression: left, parsedTokensCount: readPosition }
 }
 
+// 式の構文解析であることをわかりやすくするための関数
+// 足し算引き算よりも優先順位の低い式の構文を作ったときに書き換える
 function parseExpression(tokens) {
   return parseAddSubExpression(tokens)
 }
 
+// 波括弧で囲まれたブロックの構文解析
+// `{ stmt1; stmt2; }` のようなものを解析する
 function parseBlock(tokens) {
   if (tokens[0]?.type !== 'LBrace') {
     return { statements: null }
@@ -156,6 +169,8 @@ function parseBlock(tokens) {
   }
 }
 
+// if文の構文解析
+// `if(cond) { stmt1; stmt2; }` のようなものを解析する
 function parseIfStatement(tokens) {
   if (tokens[0]?.type !== 'If' || tokens[1]?.type !== 'LParen') {
     return { ifStatement: null }
@@ -186,6 +201,9 @@ function parseIfStatement(tokens) {
   }
 }
 
+// 代入文の構文解析
+// `ident = 12+34;` のようなものを解析する
+// この段階ではセミコロンは含まない
 function parseAssignment(tokens) {
   if (tokens[0]?.type !== 'Ident' || tokens[1]?.type !== 'Equal') {
     return { assignment: null }
@@ -204,6 +222,8 @@ function parseAssignment(tokens) {
   }
 }
 
+// 文の構文解析
+// 式(式文), 代入文, if文が文
 function parseStatement(tokens) {
   const { expression, parsedTokensCount: parsedExpressionTokensCount } = parseExpression(tokens)
   if (expression && tokens[parsedExpressionTokensCount]?.type === 'Semicolon') {
@@ -229,6 +249,8 @@ function parseStatement(tokens) {
   return { statement: null }
 }
 
+// カンマで区切られた識別子の構文解析
+// `x, y, z` のようなものを解析する
 function parseCommaSeparatedIdentfiers(tokens) {
   const head = tokens[0]
   if (head?.type !== 'Ident') {
@@ -255,6 +277,8 @@ function parseCommaSeparatedIdentfiers(tokens) {
   }
 }
 
+// 関数定義の構文解析
+// `def func(x, y) { stmt1; stmt2; }` のようなものを解析する
 function parseFunctionDefinition(tokens) {
   if (tokens[0]?.type !== 'Def' || tokens[1]?.type !== 'Ident' || tokens[2]?.type !== 'LParen') {
     return { define: null }
@@ -285,6 +309,7 @@ function parseFunctionDefinition(tokens) {
   }
 }
 
+// ソースコード全体の構文解析
 function parseSource(tokens) {
   const partsOfSource = []
   let readPosition = 0
