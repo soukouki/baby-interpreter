@@ -37,6 +37,7 @@ function undefinedFunctionError(name) {
   }
 }
 
+// if文の評価をする
 function evaluateIfStatement(ast, initialEnvironment) {
   const { condition, statements } = ast
   // eslint-disable-next-line no-use-before-define
@@ -57,6 +58,7 @@ function evaluateIfStatement(ast, initialEnvironment) {
   return evaluateMultiAST(statements, halfwayEnvironment)
 }
 
+// 足し算の評価をする
 function evaluateAdd(ast, environment) {
   const {
     result: leftResult,
@@ -88,6 +90,7 @@ function evaluateAdd(ast, environment) {
   }
 }
 
+// JSの組み込み関数を呼び出すために、インタプリタ内で使うオブジェクトをJSのオブジェクトに変換する
 function unwrapObject(obj) {
   switch (obj.type) {
     case 'IntValue':
@@ -100,6 +103,7 @@ function unwrapObject(obj) {
   }
 }
 
+// JSの組み込み関数で得られた結果をインタプリタ内で使うオブジェクトに変換する
 function wrapObject(obj) {
   const toStr = Object.prototype.toString
   switch (toStr.call(obj)) {
@@ -112,12 +116,14 @@ function wrapObject(obj) {
   }
 }
 
+// 組み込み関数を呼び出す
 function evaluateEmbeddedFunction(func, args) {
   return {
     result: wrapObject(func.function(...args.map(unwrapObject))),
   }
 }
 
+// 自作した言語の中で定義した関数を呼び出す
 function evaluateDefinedFunction(func, args, env) {
   // eslint-disable-next-line no-use-before-define
   return evaluateMultiAST(func.statements, {
@@ -129,6 +135,7 @@ function evaluateDefinedFunction(func, args, env) {
   })
 }
 
+// 組み込み関数か定義した関数かで分けて、適切に呼び出す
 function computeFunction(func, name, args, env) {
   switch (func.type) {
     case 'EmbeddedFunction':
@@ -145,6 +152,7 @@ function computeFunction(func, name, args, env) {
   }
 }
 
+// 関数呼び出しの引数をそれぞれ評価する
 function evaluateArguments(args, environment) {
   const evaluatedArguments = []
   let argumentsEvaluatedEnvironment = environment
@@ -170,6 +178,7 @@ function evaluateArguments(args, environment) {
   }
 }
 
+// 関数呼び出しを評価する
 function evaluateFunctionCalling(calling, environment) {
   const func = environment.functions.get(calling.name)
   if (func === undefined) {
@@ -205,6 +214,7 @@ function evaluateFunctionCalling(calling, environment) {
   }
 }
 
+// 関数定義を評価する
 function evaluateFunctionDefinition(funcDef, environment) {
   return {
     result: nullValue,
@@ -223,6 +233,7 @@ function evaluateFunctionDefinition(funcDef, environment) {
   }
 }
 
+// 複数の抽象構文木を、前から順番に評価していく
 function evaluateMultiAST(partsOfSource, environment) {
   let result = nullValue
   let env = environment
@@ -245,6 +256,7 @@ function evaluateMultiAST(partsOfSource, environment) {
   return { result, environment: env }
 }
 
+// 抽象構文木を評価する
 function evaluate(ast, environment) {
   switch (ast.type) {
     case 'Source':
