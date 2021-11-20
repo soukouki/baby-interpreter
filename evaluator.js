@@ -90,6 +90,37 @@ function evaluateAdd(ast, environment) {
   }
 }
 
+function evaluateSubtract(ast, environment) {
+  const {
+    result: leftResult,
+    error: leftError,
+    environment: leftEnvironment,
+    // eslint-disable-next-line no-use-before-define
+  } = evaluate(ast.left, environment)
+  if (leftError) {
+    return { error: leftError, environment }
+  }
+  if (leftResult.type !== 'IntValue') {
+    return typeError(leftResult.type, environment)
+  }
+  const {
+    result: rightResult,
+    error: rightError,
+    environment: rightEnvironment,
+    // eslint-disable-next-line no-use-before-define
+  } = evaluate(ast.right, leftEnvironment)
+  if (rightError) {
+    return { error: rightError, environment: rightEnvironment }
+  }
+  if (rightResult.type !== 'IntValue') {
+    return typeError(rightResult.type, environment)
+  }
+  return {
+    result: intValue(leftResult.value - rightResult.value),
+    environment: rightEnvironment,
+  }
+}
+
 // JSの組み込み関数を呼び出すために、インタプリタ内で使うオブジェクトをJSのオブジェクトに変換する
 function unwrapObject(obj) {
   switch (obj.type) {
@@ -278,6 +309,8 @@ function evaluate(ast, environment) {
       return evaluateIfStatement(ast, environment)
     case 'Add':
       return evaluateAdd(ast, environment)
+    case 'Subtract':
+      return evaluateSubtract(ast, environment)
     case 'Variable':
       return {
         result: environment.variables.get(ast.name) || nullValue,
