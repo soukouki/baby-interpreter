@@ -5,7 +5,7 @@ function isDigit(char) {
 
 function isIdentChar(char) {
   const charCode = char.charCodeAt(0)
-  return 'a'.charCodeAt(0) <= charCode && charCode <= 'z'.charCodeAt(0) || 'A'.charCodeAt(0) <= charCode && charCode <= 'Z'.charCodeAt(0) || charCode == '_'.charCodeAt(0) || 'ぁ'.charCodeAt(0) <= charCode && charCode <= 'ん'.charCodeAt(0) 
+  return ('a'.charCodeAt(0) <= charCode && charCode <= 'z'.charCodeAt(0)) || ('A'.charCodeAt(0) <= charCode && charCode <= 'Z'.charCodeAt(0)) || charCode === '_'.charCodeAt(0) || ('ぁ'.charCodeAt(0) <= charCode && charCode <= 'ん'.charCodeAt(0))
 }
 
 function countDigits(source) {
@@ -36,10 +36,10 @@ module.exports.lexicalAnalyse = function (source) {
   while (readPosition < source.length) {
     switch (source[readPosition]) {
       case '=':
-        if(source[readPosition + 1] === '='){
-          tokens.push({ type: 'EqualEqual'})
+        if (source[readPosition + 1] === '=') {
+          tokens.push({ type: 'EqualEqual' })
           readPosition += 2
-        }else{
+        } else {
           tokens.push({ type: 'Equal' })
           readPosition += 1
         }
@@ -60,11 +60,11 @@ module.exports.lexicalAnalyse = function (source) {
         tokens.push({ type: 'Slash' })
         readPosition += 1
         break
-      case '[':
+      case '(':
         tokens.push({ type: 'LParen' })
         readPosition += 1
         break
-      case '':
+      case ')':
         tokens.push({ type: 'RParen' })
         readPosition += 1
         break

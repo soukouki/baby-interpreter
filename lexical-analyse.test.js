@@ -22,6 +22,30 @@ describe('字句解析', () => {
       { type: 'Plus' },
       { type: 'Int', value: 2 }])
   })
+  test('1-2', () => {
+    expect(lexicalAnalyse('1+2')).toStrictEqual([
+      { type: 'Int', value: 1 },
+      { type: 'Plus' },
+      { type: 'Int', value: 2 }])
+  })
+  test('1*2', () => {
+    expect(lexicalAnalyse('1+2')).toStrictEqual([
+      { type: 'Int', value: 1 },
+      { type: 'Plus' },
+      { type: 'Int', value: 2 }])
+  })
+  test('1/2', () => {
+    expect(lexicalAnalyse('1+2')).toStrictEqual([
+      { type: 'Int', value: 1 },
+      { type: 'Plus' },
+      { type: 'Int', value: 2 }])
+  })
+  test('1==1', () => {
+    expect(lexicalAnalyse('1==1')).toStrictEqual([
+      { type: 'Int', value: 1 },
+      { type: 'EqualEqual' },
+      { type: 'Int', value: 1 }])
+  })
   test('空白は無視する', () => {
     expect(lexicalAnalyse('\t 1 ')).toStrictEqual([{ type: 'Int', value: 1 }])
     expect(lexicalAnalyse('     ')).toStrictEqual([])
@@ -30,12 +54,13 @@ describe('字句解析', () => {
       { type: 'Int', value: 2 }])
   })
   test('無効な文字列', () => {
-    expect(lexicalAnalyse('あ')).toStrictEqual([{ type: 'UnknownCharacter', value: 'あ' }])
+    expect(lexicalAnalyse('寝')).toStrictEqual([{ type: 'UnknownCharacter', value: '寝' }])
   })
   test('識別子', () => {
-    expect(lexicalAnalyse('test abc')).toStrictEqual([
+    expect(lexicalAnalyse('test abc ABC')).toStrictEqual([
       { type: 'Ident', name: 'test' },
       { type: 'Ident', name: 'abc' },
+      { type: 'Ident', name: 'ABC' },
     ])
   })
   test('丸括弧', () => {
