@@ -4,7 +4,7 @@
   "description": "",
   "main": "interpriter.js",
   "scripts": {
-    "test": "jest; eslint *.js || echo 'If you fix it, you can run `npm run lint`.'",
+    "test": "jest; eslint *.js || echo 'If you will fix it, you can run `npm run lint`.'",
     "lint": "eslint *.js --fix"
   },
   "keywords": [],
