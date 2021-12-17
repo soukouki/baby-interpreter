@@ -28,20 +28,20 @@
 -----
 
 ```ebnf
-source = { stmt | def_func }
+source = { stmt | def_func } ;
 
-def_func = "def" identifier "(" comma_separated_idents ")" block
-commma_separated_idents = ( [ ident ] )
-stmt = ( expr　";" | assign ";" | if )
-assign = identifier "=" expr
-if = "if" "(" expr ")" block
-block = "{" { stmt } "}"
+def_func = "def" identifier "(" comma_separated_idents ")" block ;
+commma_separated_idents = ( [ ident ] ) ;
+stmt = ( expr ";" | assign ";" | if ) ;
+assign = identifier "=" expr ;
+if = "if" "(" expr ")" block ;
+block = "{" { stmt } "}" ;
 
-expr = add_sub_expr
-add_sub_expr = func_call_expr , { "+" , func_call_expr }
-func_call_expr = identifier "(" comma_separated_exprs ")" | parenthesis_expr
-comma_separated_exprs = ( [ expr { , expr } ] )
-parenthesis_expr = "(" expr ")" | value
-value = ident | literal
-literal = number
+expr = add_sub_expr ;
+add_sub_expr = func_call_expr , { "+" , func_call_expr } ;
+func_call_expr = identifier "(" comma_separated_exprs ")" | parenthesis_expr ;
+comma_separated_exprs = ( [ expr { , expr } ] ) ;
+parenthesis_expr = "(" expr ")" | value ;
+value = ident | literal ;
+literal = number ;
 ```
