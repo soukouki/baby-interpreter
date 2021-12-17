@@ -43,5 +43,7 @@ func_call_expr = identifier "(" comma_separated_exprs ")" | parenthesis_expr ;
 comma_separated_exprs = ( [ expr { , expr } ] ) ;
 parenthesis_expr = "(" expr ")" | value ;
 value = ident | literal ;
-literal = number ;
+literal = number | boolean | null ;
+boolean = "true" | "false" ;
+null = "null" ;
 ```
