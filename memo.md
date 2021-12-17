@@ -38,7 +38,7 @@ if = "if" "(" expr ")" block ;
 block = "{" { stmt } "}" ;
 
 expr = add_sub_expr ;
-add_sub_expr = func_call_expr , { "+" , func_call_expr } ;
+add_sub_expr = func_call_expr { "+" func_call_expr } ;
 func_call_expr = identifier "(" comma_separated_exprs ")" | parenthesis_expr ;
 comma_separated_exprs = [ expr { "," expr } ] ;
 parenthesis_expr = "(" expr ")" | value ;
