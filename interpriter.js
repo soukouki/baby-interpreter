@@ -1,6 +1,7 @@
 /* eslint-disable no-console */
 
 const util = require('util')
+const fs = require('fs')
 const prompts = require('prompts')
 const { lexicalAnalyse } = require('./lexical-analyse')
 const { parse } = require('./parser')
@@ -28,9 +29,13 @@ let environment = {
       function: console.log,
     }],
   ]),
-};
+}
 
-(async () => {
+function checkLexicalError(tokens) {
+  tokens.find((token) => token.type === 'UnknownCharacter')
+}
+
+async function interrupt() {
   const { mode } = await prompts({
     type: 'select',
     name: 'mode',
@@ -47,7 +52,7 @@ let environment = {
     const source = await read()
     if (source === undefined) break
     const tokens = lexicalAnalyse(source)
-    const lexicalError = tokens.find((token) => token.type === 'UnknownCharacter')
+    const lexicalError = checkLexicalError(tokens)
     if (lexicalError) {
       console.error(stringify(lexicalError))
       continue
@@ -72,5 +77,33 @@ let environment = {
     }
     console.log(stringify(resultObject.result))
     environment = resultObject.environment
+  }
+}
+
+async function evaluateFile(path) {
+  const source = await fs.readFileSync(path, 'utf-8')
+
+  const tokens = lexicalAnalyse(source)
+  const lexicalError = checkLexicalError(tokens)
+  if (lexicalError) {
+    console.error(stringify(lexicalError))
+    return
+  }
+  const ast = parse(tokens)
+  if (ast.type === 'SyntaxError') {
+    console.error(stringify(ast))
+    return
+  }
+  const resultObject = evaluate(ast, environment)
+  if (resultObject.error) {
+    console.error(stringify(resultObject))
+  }
+}
+
+(async () => {
+  if (process.argv[2]) {
+    await evaluateFile(process.argv[2])
+  } else {
+    await interrupt()
   }
 })()
