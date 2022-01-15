@@ -177,17 +177,17 @@ function parseIfStatement(tokens) {
   }
   const {
     expression: condition,
-    parsedTokensCount: parsedExpressionTokensCount,
+    parsedTokensCount: parsedConditionTokensCount,
   } = parseExpression(tokens.slice(2))
   if (
     !condition
-    || tokens[parsedExpressionTokensCount + 2]?.type !== 'RParen') {
+    || tokens[parsedConditionTokensCount + 2]?.type !== 'RParen') {
     return { ifStatement: null }
   }
   const {
     statements,
     parsedTokensCount: parsedBlockTokensCount,
-  } = parseBlock(tokens.slice(parsedExpressionTokensCount + 3))
+  } = parseBlock(tokens.slice(parsedConditionTokensCount + 3))
   if (!statements) {
     return { ifStatement: null }
   }
@@ -197,7 +197,7 @@ function parseIfStatement(tokens) {
       condition,
       statements,
     },
-    parsedTokensCount: parsedExpressionTokensCount + parsedBlockTokensCount + 3,
+    parsedTokensCount: parsedConditionTokensCount + parsedBlockTokensCount + 3,
   }
 }
 
