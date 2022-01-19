@@ -1,12 +1,12 @@
 const { evaluate } = require('./evaluator')
 const { parse } = require('./parser')
-const { lexicalAnalyse } = require('./lexical-analyse')
+const { lexicalAnalyze } = require('./lexical-analyze')
 const {
   emptyEnvironment, nullValue, intValue, boolValue,
 } = require('./value')
 
 function lexAndParse(source) {
-  return parse(lexicalAnalyse(source))
+  return parse(lexicalAnalyze(source))
 }
 
 describe('評価', () => {

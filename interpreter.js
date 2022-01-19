@@ -3,7 +3,7 @@
 const util = require('util')
 const fs = require('fs')
 const prompts = require('prompts')
-const { lexicalAnalyse } = require('./lexical-analyse')
+const { lexicalAnalyze } = require('./lexical-analyze')
 const { parse } = require('./parser')
 const { evaluate } = require('./evaluator')
 const { intValue } = require('./value')
@@ -46,9 +46,9 @@ async function interrupt() {
     name: 'mode',
     message: 'Choose mode',
     choices: [
-      { title: 'only lexical analyse', value: 'LexicalAnalyse' },
-      { title: 'lexical analyse and parse', value: 'Parse' },
-      { title: 'lexical analyse, parse, and evaluate', value: 'Evaluate' },
+      { title: 'only lexical analyze', value: 'LexicalAnalyze' },
+      { title: 'lexical analyze and parse', value: 'Parse' },
+      { title: 'lexical analyze, parse, and evaluate', value: 'Evaluate' },
     ],
     initial: 2,
   })
@@ -56,13 +56,13 @@ async function interrupt() {
     // eslint-disable-next-line no-await-in-loop
     const source = await read()
     if (source === undefined) break
-    const tokens = lexicalAnalyse(source)
+    const tokens = lexicalAnalyze(source)
     const lexicalError = checkLexicalError(tokens)
     if (lexicalError) {
       console.error(stringify(lexicalError))
       continue
     }
-    if (mode === 'LexicalAnalyse') {
+    if (mode === 'LexicalAnalyze') {
       console.log(stringify(tokens))
       continue
     }
@@ -88,7 +88,7 @@ async function interrupt() {
 async function evaluateFile(path) {
   const source = await fs.readFileSync(path, 'utf-8')
 
-  const tokens = lexicalAnalyse(source)
+  const tokens = lexicalAnalyze(source)
   const lexicalError = checkLexicalError(tokens)
   if (lexicalError) {
     console.error(stringify(lexicalError))

@@ -1,7 +1,7 @@
 const { parse } = require('./parser')
-const { lexicalAnalyse } = require('./lexical-analyse')
+const { lexicalAnalyze } = require('./lexical-analyze')
 
-const lex = lexicalAnalyse
+const lex = lexicalAnalyze
 
 describe('構文解析', () => {
   test('空', () => {

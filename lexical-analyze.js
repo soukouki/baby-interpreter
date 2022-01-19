@@ -30,7 +30,7 @@ function countIdentChars(source) {
   return readPosition
 }
 
-module.exports.lexicalAnalyse = function (source) {
+module.exports.lexicalAnalyze = function (source) {
   const tokens = []
   let readPosition = 0
   while (readPosition < source.length) {
