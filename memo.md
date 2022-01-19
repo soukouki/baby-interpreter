@@ -15,7 +15,7 @@
 |ident|identifier|識別子|
 |args|arguments|引数|
 |func|function|関数|
-|paren|parenthesis|丸括弧|
+|paren|parentheses|丸括弧|
 |add|addition|足し算|
 |sub|subtract|引き算|
 |mul|multiply|掛け算|
@@ -39,9 +39,9 @@ block = "{" { stmt } "}" ;
 
 expr = add_sub_expr ;
 add_sub_expr = func_call_expr { "+" func_call_expr } ;
-func_call_expr = identifier "(" comma_separated_exprs ")" | parenthesis_expr ;
+func_call_expr = identifier "(" comma_separated_exprs ")" | parentheses_expr ;
 comma_separated_exprs = [ expr { "," expr } ] ;
-parenthesis_expr = "(" expr ")" | value ;
+parentheses_expr = "(" expr ")" | value ;
 value = ident | literal ;
 literal = number | boolean | null ;
 boolean = "true" | "false" ;

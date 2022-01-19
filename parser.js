@@ -48,7 +48,7 @@ function parseValue(tokens) {
 }
 
 // 優先順位を変える丸括弧の構文解析
-function parseParenthesisExpression(tokens) {
+function parseParenthesesExpression(tokens) {
   if (tokens[0]?.type === 'LParen') {
     // eslint-disable-next-line no-use-before-define
     const { expression, parsedTokensCount } = parseExpression(tokens.slice(1))
@@ -96,15 +96,15 @@ function parseCommaSeparatedExpressions(tokens) {
 function parseFunctionCallingExpression(tokens) {
   const name = tokens[0]
   if (name?.type !== 'Ident' || tokens[1]?.type !== 'LParen') {
-    return parseParenthesisExpression(tokens)
+    return parseParenthesesExpression(tokens)
   }
   const argsAndParsedTokensCount = parseCommaSeparatedExpressions(tokens.slice(2))
   if (argsAndParsedTokensCount === null) {
-    return parseParenthesisExpression(tokens)
+    return parseParenthesesExpression(tokens)
   }
   const { args, parsedTokensCount } = argsAndParsedTokensCount
   if (tokens[parsedTokensCount + 2]?.type !== 'RParen') {
-    return parseParenthesisExpression(tokens)
+    return parseParenthesesExpression(tokens)
   }
   return {
     expression: {
