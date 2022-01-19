@@ -6,6 +6,7 @@ const prompts = require('prompts')
 const { lexicalAnalyse } = require('./lexical-analyse')
 const { parse } = require('./parser')
 const { evaluate } = require('./evaluator')
+const { intValue } = require('./value')
 
 async function read() {
   const result = await prompts({
@@ -21,7 +22,9 @@ function stringify(obj) {
 }
 
 let environment = {
-  variables: new Map(),
+  variables: new Map([
+    ['zero', intValue(0)],
+  ]),
   functions: new Map([
     ['print', {
       type: 'EmbeddedFunction',
