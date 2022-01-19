@@ -129,7 +129,7 @@ function evaluateDefinedFunction(func, args, env) {
   return evaluateMultiAST(func.statements, {
     variables: new Map(
       [...Array(func.argumentsCount).keys()]
-        .map((i) => [func.arguments[i], args[i]]),
+        .map((i) => [func.arguments[i], { value: args[i] }]),
     ),
     functions: env.functions,
   })
@@ -260,7 +260,7 @@ function evaluate(ast, environment) {
         environment: {
           variables: new Map(environment.variables).set(
             ast.name,
-            evaluate(ast.expression, environment).result,
+            { value: evaluate(ast.expression, environment).result },
           ),
           functions: environment.functions,
         },
@@ -271,7 +271,7 @@ function evaluate(ast, environment) {
       return evaluateAdd(ast, environment)
     case 'Variable':
       return {
-        result: environment.variables.get(ast.name) || nullValue,
+        result: environment.variables.get(ast.name)?.value || nullValue,
         environment,
       }
     case 'FuncCall':

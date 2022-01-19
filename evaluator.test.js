@@ -94,8 +94,10 @@ describe('評価', () => {
         environment: {
           variables: new Map([
             ['a', {
-              type: 'IntValue',
-              value: 1,
+              value: {
+                type: 'IntValue',
+                value: 1,
+              },
             }],
           ]),
           functions: new Map(),
@@ -107,7 +109,9 @@ describe('評価', () => {
     test('正常な参照', () => {
       expect(evaluate(lexAndParse('value;'), {
         variables: new Map([
-          ['value', intValue(123)],
+          ['value', {
+            value: intValue(123),
+          }],
         ]),
         functions: new Map(),
       })).toStrictEqual(
@@ -115,7 +119,9 @@ describe('評価', () => {
           result: intValue(123),
           environment: {
             variables: new Map([
-              ['value', intValue(123)],
+              ['value', {
+                value: intValue(123),
+              }],
             ]),
             functions: new Map(),
           },
@@ -137,7 +143,9 @@ describe('評価', () => {
         result: nullValue,
         environment: {
           variables: new Map([
-            ['a', intValue(1)],
+            ['a', {
+              value: intValue(1),
+            }],
           ]),
           functions: new Map(),
         },
@@ -154,7 +162,9 @@ describe('評価', () => {
         result: nullValue,
         environment: {
           variables: new Map([
-            ['a', intValue(1)],
+            ['a', {
+              value: intValue(1),
+            }],
           ]),
           functions: new Map(),
         },

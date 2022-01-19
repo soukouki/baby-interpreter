@@ -23,7 +23,9 @@ function stringify(obj) {
 
 let environment = {
   variables: new Map([
-    ['zero', intValue(0)],
+    ['zero', {
+      value: intValue(0),
+    }],
   ]),
   functions: new Map([
     ['print', {
