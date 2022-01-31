@@ -46,6 +46,22 @@ describe('字句解析', () => {
       { type: 'EqualEqual' },
       { type: 'Int', value: 1 }])
   })
+  test('文字列リテラル', () => {
+    expect(lexicalAnalyse('"aaa"')).toStrictEqual([
+      { type: 'String', value: 'aaa' }])
+  })
+  test('文字列リテラルn含', () => {
+    expect(lexicalAnalyse('"aaa\\n"')).toStrictEqual([
+      { type: 'String', value: 'aaa\n' }])
+  })
+  test('文字列リテラルt含', () => {
+    expect(lexicalAnalyse('"aaa\\t"')).toStrictEqual([
+      { type: 'String', value: 'aaa\t' }])
+  })
+  test('文字列リテラル"含', () => {
+    expect(lexicalAnalyse('"aaa\\""')).toStrictEqual([
+      { type: 'String', value: 'aaa"' }])
+  })
   test('空白は無視する', () => {
     expect(lexicalAnalyse('\t 1 ')).toStrictEqual([{ type: 'Int', value: 1 }])
     expect(lexicalAnalyse('     ')).toStrictEqual([])

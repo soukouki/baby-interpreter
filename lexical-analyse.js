@@ -30,6 +30,45 @@ function countIdentChars(source) {
   return readPosition
 }
 
+function countLiteral(source) {
+  let readPosition = 0
+  while (readPosition < source.length) {
+    if (source[readPosition - 1] !== '\\' && source[readPosition] === '"') {
+      break
+    }
+    readPosition += 1
+  }
+  return readPosition
+}
+
+function escapeSeqLiteral(source) {
+  let readPosition = 0
+  let literal
+  while (1) {
+    if (source[readPosition] === '\\') {
+      if (source[readPosition + 1] === 'n') {
+        literal = `${literal + source.substr(0, readPosition)}\n`
+        source = source.slice(readPosition + 2)
+        readPosition = 0
+      } else if (source[readPosition + 1] === 't') {
+        literal = `${literal + source.substr(0, readPosition)}\t`
+        source = source.slice(readPosition + 2)
+        readPosition = 0
+      } else if (source[readPosition + 1] === '"') {
+        literal = `${literal + source.substr(0, readPosition)}\"`
+        source = source.slice(readPosition + 2)
+        readPosition = 0
+      }
+    }
+    if (readPosition >= source.length - 1) {
+      literal += source
+      break
+    }
+    readPosition += 1
+  }
+  return literal.substr(9, literal.length)
+}
+
 module.exports.lexicalAnalyse = function (source) {
   const tokens = []
   let readPosition = 0
@@ -41,6 +80,33 @@ module.exports.lexicalAnalyse = function (source) {
           readPosition += 2
         } else {
           tokens.push({ type: 'Equal' })
+          readPosition += 1
+        }
+        break
+      case '!':
+        if (source[readPosition + 1] === '=') {
+          tokens.push({ type: 'ExclaEqual' })
+          readPosition += 2
+        } else {
+          tokens.push({ type: 'Excla' })
+          readPosition += 1
+        }
+        break
+      case '<':
+        if (source[readPosition + 1] === '=') {
+          tokens.push({ type: 'LesserEqual' })
+          readPosition += 2
+        } else {
+          tokens.push({ type: 'Lesser' })
+          readPosition += 1
+        }
+        break
+      case '>':
+        if (source[readPosition + 1] === '=') {
+          tokens.push({ type: 'GreaterEqual' })
+          readPosition += 2
+        } else {
+          tokens.push({ type: 'Greater' })
           readPosition += 1
         }
         break
@@ -57,8 +123,24 @@ module.exports.lexicalAnalyse = function (source) {
         readPosition += 1
         break
       case '/':
-        tokens.push({ type: 'Slash' })
-        readPosition += 1
+        if (source[readPosition + 1] === '/') {
+          readPosition += 2
+          while (readPosition < source.length) {
+            readPosition += 1
+          }
+        } else if (source[readPosition + 1] === '*') {
+          readPosition += 2
+          while (1) {
+            if (source[readPosition] === '*' && source[readPosition + 1] === '/') {
+              readPosition += 2
+              break
+            }
+            readPosition += 1
+          }
+        } else {
+          tokens.push({ type: 'Slash' })
+          readPosition += 1
+        }
         break
       case '(':
         tokens.push({ type: 'LParen' })
@@ -84,6 +166,13 @@ module.exports.lexicalAnalyse = function (source) {
         tokens.push({ type: 'Semicolon' })
         readPosition += 1
         break
+      case '"':
+        readPosition += 1
+        const literalCount = countLiteral(source.slice(readPosition))
+        const string = escapeSeqLiteral(source.slice(readPosition, readPosition + literalCount))
+        tokens.push({ type: 'String', value: string })
+        readPosition += literalCount + 1
+        break
       case ' ':
       case '\t':
       case '\n':
@@ -106,11 +195,25 @@ module.exports.lexicalAnalyse = function (source) {
                 type: 'If',
               })
               break
+            case 'else':
+              tokens.push({
+                type: 'Else',
+              })
+              break
+            case 'while':
+              tokens.push({
+                type: 'While',
+              })
+              break
             case 'def':
               tokens.push({
                 type: 'Def',
               })
               break
+            case 'break':
+              tokens.push({
+                type: 'Break',
+              })
             case 'true':
             case 'false':
               tokens.push({

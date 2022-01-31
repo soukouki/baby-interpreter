@@ -16,6 +16,13 @@ exports.boolValue = function (value) {
   }
 }
 
+exports.stringValue = function (value) {
+  return {
+    type: 'StringValue',
+    value,
+  }
+}
+
 exports.emptyEnvironment = {
   variables: new Map(),
   functions: new Map(),

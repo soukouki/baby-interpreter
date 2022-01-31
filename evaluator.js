@@ -1,4 +1,6 @@
-const { intValue, nullValue, boolValue } = require('./value')
+const {
+  intValue, nullValue, stringValue, boolValue,
+} = require('./value')
 
 function evaluatorError(ast) {
   return {
@@ -39,7 +41,7 @@ function undefinedFunctionError(name) {
 
 // if文の評価をする
 function evaluateIfStatement(ast, initialEnvironment) {
-  const { condition, statements } = ast
+  const { condition, statements, else_statements} = ast
   // eslint-disable-next-line no-use-before-define
   const { result, error, environment: halfwayEnvironment } = evaluate(condition, initialEnvironment)
   if (error) {
@@ -49,6 +51,32 @@ function evaluateIfStatement(ast, initialEnvironment) {
     }
   }
   if ((result.type === 'BoolValue' && result.value === false) || result.type === 'NullValue') {
+    if(else_statements){
+      return evaluateMultiAST(else_statements, halfwayEnvironment)
+    }
+    return {
+      result: nullValue,
+      environment: halfwayEnvironment,
+    }
+  }
+  // eslint-disable-next-line no-use-before-define
+  return evaluateMultiAST(statements, halfwayEnvironment)
+}
+
+function evaluateCondition(ast, initialEnvironment) {
+  const { condition, statements, else_statements} = ast
+  // eslint-disable-next-line no-use-before-define
+  const { result, error, environment: halfwayEnvironment } = evaluate(condition, initialEnvironment)
+  if (error) {
+    return {
+      error,
+      environment: halfwayEnvironment,
+    }
+  }
+  if ((result.type === 'BoolValue' && result.value === false) || result.type === 'NullValue') {
+    if(else_statements){
+      return evaluateMultiAST(else_statements, halfwayEnvironment)
+    }
     return {
       result: nullValue,
       environment: halfwayEnvironment,
@@ -121,11 +149,106 @@ function evaluateSubtract(ast, environment) {
   }
 }
 
+function evaluateStringAdd(ast, environment) {
+  const {
+    result: leftResult,
+    error: leftError,
+    environment: leftEnvironment,
+    // eslint-disable-next-line no-use-before-define
+  } = evaluate(ast.left, environment)
+  if (leftError) {
+    return { error: leftError, environment }
+  }
+  if (leftResult.type !== 'StringValue') {
+    return typeError(leftResult.type, environment)
+  }
+  const {
+    result: rightResult,
+    error: rightError,
+    environment: rightEnvironment,
+    // eslint-disable-next-line no-use-before-define
+  } = evaluate(ast.right, leftEnvironment)
+  if (rightError) {
+    return { error: rightError, environment: rightEnvironment }
+  }
+  if (rightResult.type !== 'StringValue') {
+    return typeError(rightResult.type, environment)
+  }
+  return {
+    result: stringValue(leftResult.value + rightResult.value),
+    environment: rightEnvironment,
+  }
+}
+
+function evaluateMultiply(ast, environment) {
+  const {
+    result: leftResult,
+    error: leftError,
+    environment: leftEnvironment,
+    // eslint-disable-next-line no-use-before-define
+  } = evaluate(ast.left, environment)
+  if (leftError) {
+    return { error: leftError, environment }
+  }
+  if (leftResult.type !== 'IntValue') {
+    return typeError(leftResult.type, environment)
+  }
+  const {
+    result: rightResult,
+    error: rightError,
+    environment: rightEnvironment,
+    // eslint-disable-next-line no-use-before-define
+  } = evaluate(ast.right, leftEnvironment)
+  if (rightError) {
+    return { error: rightError, environment: rightEnvironment }
+  }
+  if (rightResult.type !== 'IntValue') {
+    return typeError(rightResult.type, environment)
+  }
+  return {
+    result: intValue(leftResult.value * rightResult.value),
+    environment: rightEnvironment,
+  }
+}
+
+function evaluateDivision(ast, environment) {
+  const {
+    result: leftResult,
+    error: leftError,
+    environment: leftEnvironment,
+    // eslint-disable-next-line no-use-before-define
+  } = evaluate(ast.left, environment)
+  if (leftError) {
+    return { error: leftError, environment }
+  }
+  if (leftResult.type !== 'IntValue') {
+    return typeError(leftResult.type, environment)
+  }
+  const {
+    result: rightResult,
+    error: rightError,
+    environment: rightEnvironment,
+    // eslint-disable-next-line no-use-before-define
+  } = evaluate(ast.right, leftEnvironment)
+  if (rightError) {
+    return { error: rightError, environment: rightEnvironment }
+  }
+  if (rightResult.type !== 'IntValue') {
+    return typeError(rightResult.type, environment)
+  }
+  return {
+    result: intValue(parseInt(leftResult.value / rightResult.value)),
+    environment: rightEnvironment,
+  }
+}
+
 // JSの組み込み関数を呼び出すために、インタプリタ内で使うオブジェクトをJSのオブジェクトに変換する
 function unwrapObject(obj) {
   switch (obj.type) {
     case 'IntValue':
     case 'BoolValue':
+      return obj.value
+    case 'StringValue':
       return obj.value
     case 'NullValue':
       return null
@@ -142,6 +265,8 @@ function wrapObject(obj) {
       return intValue(obj)
     case '[object Boolean]':
       return boolValue(obj)
+    case '[object String]':
+      return stringValue(obj)
     default:
       return nullValue
   }
@@ -305,12 +430,21 @@ function evaluate(ast, environment) {
           functions: environment.functions,
         },
       }
+    case 'Condition':
+      return evaluateCondition(ast, environment)
     case 'If':
       return evaluateIfStatement(ast, environment)
     case 'Add':
+      if (ast.left.type === 'StringLiteral' && ast.right.type === 'StringLiteral') {
+        return evaluateStringAdd(ast, environment)
+      }
       return evaluateAdd(ast, environment)
     case 'Subtract':
       return evaluateSubtract(ast, environment)
+    case 'Multiply':
+      return evaluateMultiply(ast, environment)
+    case 'Division':
+      return evaluateDivision(ast, environment)
     case 'Variable':
       return {
         result: environment.variables.get(ast.name) || nullValue,
@@ -326,6 +460,11 @@ function evaluate(ast, environment) {
     case 'BoolLiteral':
       return {
         result: boolValue(ast.value),
+        environment,
+      }
+    case 'StringLiteral':
+      return {
+        result: stringValue(ast.value),
         environment,
       }
     case 'NullLiteral':

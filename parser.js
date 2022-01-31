@@ -10,6 +10,14 @@ function parseLiteral(tokens) {
         },
         parsedTokensCount: 1,
       }
+    case 'String':
+      return {
+        expression: {
+          type: 'StringLiteral',
+          value: head.value,
+        },
+        parsedTokensCount: 1,
+      }
     case 'Bool':
       return {
         expression: {
@@ -116,22 +124,95 @@ function parseFunctionCallingExpression(tokens) {
   }
 }
 
+function parsePosNegExpression(tokens){
+  const sign = tokens[0]
+  if(sign.type === 'Minus'){
+    let {expression: expr, parsedTokensCount: readPosition} = parsePosNegExpression(tokens.slice(1)) 
+    return a = { 
+        expression:{
+          type: 'Negative', 
+          expression: expr
+        }, 
+        parsedTokensCount:readPosition + 1 
+      }
+  } else if(sign.type === 'Plus'){
+    let {expression: expr, parsedTokensCount: readPosition} = parsePosNegExpression(tokens.slice(1)) 
+    return a = { 
+        expression:{
+          type: 'Positive', 
+          expression: expr
+        }, 
+        parsedTokensCount:readPosition + 1 
+      }
+  } else {
+    return parseFunctionCallingExpression(tokens)
+  }
+}
+
+function parseMulDivExpression(tokens) {
+  let { expression: left, parsedTokensCount: readPosition } = parsePosNegExpression(tokens)
+  while (tokens[readPosition]?.type === 'Asterisk' || tokens[readPosition]?.type === 'Slash') {
+    const {
+      expression: right,
+      parsedTokensCount: rightTokensCount,
+    } = parsePosNegExpression(tokens.slice(readPosition + 1))
+    if (right === null) {
+      return { expression: null }
+    }
+    if (tokens[readPosition]?.type === 'Asterisk') {
+      left = { type: 'Multiply', left, right }
+    } else if (tokens[readPosition]?.type === 'Slash') {
+      left = { type: 'Division', left, right }
+    }
+    readPosition += rightTokensCount + 1
+  }
+  return { expression: left, parsedTokensCount: readPosition }
+}
+
 // 足し算と引き算の構文解析
 // 引き算は勉強会中で機能追加をする
 function parseAddSubExpression(tokens) {
-  let { expression: left, parsedTokensCount: readPosition } = parseFunctionCallingExpression(tokens)
+  let { expression: left, parsedTokensCount: readPosition } = parseMulDivExpression(tokens)
   while (tokens[readPosition]?.type === 'Plus' || tokens[readPosition]?.type === 'Minus') {
     const {
       expression: right,
       parsedTokensCount: rightTokensCount,
-    } = parseFunctionCallingExpression(tokens.slice(readPosition + 1))
+    } = parseMulDivExpression(tokens.slice(readPosition + 1))
     if (right === null) {
       return { expression: null }
     }
-    if(tokens[readPosition]?.type === 'Plus') {
+    if (tokens[readPosition]?.type === 'Plus') {
       left = { type: 'Add', left, right }
-    }else if(tokens[readPosition]?.type === 'Minus') {
+    } else if (tokens[readPosition]?.type === 'Minus') {
       left = { type: 'Subtract', left, right }
+    }
+    readPosition += rightTokensCount + 1
+  }
+  return { expression: left, parsedTokensCount: readPosition }
+}
+
+function parseCondition(tokens) {
+  let { expression: left, parsedTokensCount: readPosition } = parseAddSubExpression(tokens)
+  while (tokens[readPosition]?.type === 'EqualEqual' || tokens[readPosition]?.type === 'ExclaEqual' || tokens[readPosition]?.type === 'LesserEqual' || tokens[readPosition]?.type === 'GreaterEqual' || tokens[readPosition]?.type === 'ExclaEqual' || tokens[readPosition]?.type === 'Lesser' || tokens[readPosition]?.type === 'Greater') {
+    const {
+      expression: right,
+      parsedTokensCount: rightTokensCount,
+    } = parseAddSubExpression(tokens.slice(readPosition + 1))
+    if (right === null) {
+      return { expression: null }
+    }
+    if (tokens[readPosition]?.type === 'EqualEqual') {
+      left = { type: 'IsEqual', left, right }
+    } else if (tokens[readPosition]?.type === 'ExclaEqual') {
+      left = { type: 'IsNotEqual', left, right }
+    } else if (tokens[readPosition]?.type === 'LesserEqual') {
+      left = { type: 'IsLesserOrEqual', left, right }
+    } else if (tokens[readPosition]?.type === 'GreaterEqual') {
+      left = { type: 'IsGreaterOrEqual', left, right }
+    } else if (tokens[readPosition]?.type === 'Lesser') {
+      left = { type: 'IsLesser', left, right }
+    } else if (tokens[readPosition]?.type === 'Greater') {
+      left = { type: 'IsGreater', left, right }
     }
     readPosition += rightTokensCount + 1
   }
@@ -143,6 +224,8 @@ function parseAddSubExpression(tokens) {
 function parseExpression(tokens) {
   return parseAddSubExpression(tokens)
 }
+
+
 
 // 波括弧で囲まれたブロックの構文解析
 // `{ stmt1; stmt2; }` のようなものを解析する
@@ -195,9 +278,66 @@ function parseIfStatement(tokens) {
   if (!statements) {
     return { ifStatement: null }
   }
+  if (tokens[parsedExpressionTokensCount + parsedBlockTokensCount + 3]?.type === 'Else'){
+    const {
+      statements: else_statements,
+      parsedTokensCount: else_parsedBlockTokensCount,
+    } = parseBlock(tokens.slice(parsedExpressionTokensCount + parsedBlockTokensCount + 4))
+    if (!else_statements) {
+      return {
+        ifelseStatement: {
+          type: 'If',
+          condition,
+          statements,
+        },
+        parsedTokensCount: parsedExpressionTokensCount + parsedBlockTokensCount + 3,
+      }
+    }
+    return {
+      ifelseStatement: {
+        type: 'If',
+        condition,
+        statements,
+        else_statements,
+      },
+      parsedTokensCount: parsedExpressionTokensCount + parsedBlockTokensCount +3 +else_parsedBlockTokensCount+ 3,
+    }
+  }else{
+    return {
+      ifelseStatement: {
+        type: 'If',
+        condition,
+        statements,
+      },
+      parsedTokensCount: parsedExpressionTokensCount + parsedBlockTokensCount + 3,
+    }
+  }
+  
+}
+
+function parseWhileStatement(tokens){
+  if (tokens[0]?.type !== 'While' || tokens[1]?.type !== 'LParen') {
+    return { WhileStatement: null }
+  }
+  const {
+    expression: condition,
+    parsedTokensCount: parsedExpressionTokensCount,
+  } = parseExpression(tokens.slice(2))
+  if (
+    !condition
+    || tokens[parsedExpressionTokensCount + 2]?.type !== 'RParen') {
+    return { WhileStatement: null }
+  }
+  const {
+    statements,
+    parsedTokensCount: parsedBlockTokensCount,
+  } = parseBlock(tokens.slice(parsedExpressionTokensCount + 3))
+  if (!statements) {
+    return { WhileStatement: null }
+  }
   return {
-    ifStatement: {
-      type: 'If',
+    WhileStatement: {
+      type: 'While',
       condition,
       statements,
     },
@@ -243,11 +383,18 @@ function parseStatement(tokens) {
       parsedTokensCount: parsedAssignmentTokensCount + 1,
     }
   }
-  const { ifStatement, parsedTokensCount: parsedIfTokensCount } = parseIfStatement(tokens)
-  if (ifStatement) {
+  const { ifelseStatement, parsedTokensCount: parsedIfTokensCount } = parseIfStatement(tokens)
+  if (ifelseStatement) {
     return {
-      statement: ifStatement,
+      statement: ifelseStatement,
       parsedTokensCount: parsedIfTokensCount,
+    }
+  }
+  const { WhileStatement, parsedTokensCount: parsedWhileTokensCount } = parseWhileStatement(tokens)
+  if (WhileStatement) {
+    return {
+      statement: WhileStatement,
+      parsedTokensCount: parsedWhileTokensCount,
     }
   }
   return { statement: null }
