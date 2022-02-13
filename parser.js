@@ -124,29 +124,32 @@ function parseFunctionCallingExpression(tokens) {
   }
 }
 
-function parsePosNegExpression(tokens){
+function parsePosNegExpression(tokens) {
   const sign = tokens[0]
-  if(sign.type === 'Minus'){
-    let {expression: expr, parsedTokensCount: readPosition} = parsePosNegExpression(tokens.slice(1)) 
-    return a = { 
-        expression:{
-          type: 'Negative', 
-          expression: expr
-        }, 
-        parsedTokensCount:readPosition + 1 
-      }
-  } else if(sign.type === 'Plus'){
-    let {expression: expr, parsedTokensCount: readPosition} = parsePosNegExpression(tokens.slice(1)) 
-    return a = { 
-        expression:{
-          type: 'Positive', 
-          expression: expr
-        }, 
-        parsedTokensCount:readPosition + 1 
-      }
-  } else {
-    return parseFunctionCallingExpression(tokens)
+  if (sign.type === 'Minus') {
+    const {
+      expression: expr, parsedTokensCount: readPosition,
+    } = parsePosNegExpression(tokens.slice(1))
+    return {
+      expression: {
+        type: 'Negative',
+        expression: expr,
+      },
+      parsedTokensCount: readPosition + 1,
+    }
+  } if (sign.type === 'Plus') {
+    const {
+      expression: expr, parsedTokensCount: readPosition,
+    } = parsePosNegExpression(tokens.slice(1))
+    return {
+      expression: {
+        type: 'Positive',
+        expression: expr,
+      },
+      parsedTokensCount: readPosition + 1,
+    }
   }
+  return parseFunctionCallingExpression(tokens)
 }
 
 function parseMulDivExpression(tokens) {
@@ -222,10 +225,8 @@ function parseCondition(tokens) {
 // 式の構文解析であることをわかりやすくするための関数
 // 足し算引き算よりも優先順位の低い式の構文を作ったときに書き換える
 function parseExpression(tokens) {
-  return parseAddSubExpression(tokens)
+  return parseCondition(tokens)
 }
-
-
 
 // 波括弧で囲まれたブロックの構文解析
 // `{ stmt1; stmt2; }` のようなものを解析する
@@ -278,12 +279,12 @@ function parseIfStatement(tokens) {
   if (!statements) {
     return { ifStatement: null }
   }
-  if (tokens[parsedExpressionTokensCount + parsedBlockTokensCount + 3]?.type === 'Else'){
+  if (tokens[parsedExpressionTokensCount + parsedBlockTokensCount + 3]?.type === 'Else') {
     const {
-      statements: else_statements,
-      parsedTokensCount: else_parsedBlockTokensCount,
+      statements: elseStatements,
+      parsedTokensCount: elseParsedBlockTokensCount,
     } = parseBlock(tokens.slice(parsedExpressionTokensCount + parsedBlockTokensCount + 4))
-    if (!else_statements) {
+    if (!elseStatements) {
       return {
         ifelseStatement: {
           type: 'If',
@@ -298,24 +299,23 @@ function parseIfStatement(tokens) {
         type: 'If',
         condition,
         statements,
-        else_statements,
+        elseStatements,
       },
-      parsedTokensCount: parsedExpressionTokensCount + parsedBlockTokensCount +3 +else_parsedBlockTokensCount+ 3,
-    }
-  }else{
-    return {
-      ifelseStatement: {
-        type: 'If',
-        condition,
-        statements,
-      },
-      parsedTokensCount: parsedExpressionTokensCount + parsedBlockTokensCount + 3,
+      parsedTokensCount:
+        parsedExpressionTokensCount + parsedBlockTokensCount + 3 + elseParsedBlockTokensCount + 3,
     }
   }
-  
+  return {
+    ifelseStatement: {
+      type: 'If',
+      condition,
+      statements,
+    },
+    parsedTokensCount: parsedExpressionTokensCount + parsedBlockTokensCount + 3,
+  }
 }
 
-function parseWhileStatement(tokens){
+function parseWhileStatement(tokens) {
   if (tokens[0]?.type !== 'While' || tokens[1]?.type !== 'LParen') {
     return { WhileStatement: null }
   }

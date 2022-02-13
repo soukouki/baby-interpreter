@@ -130,7 +130,7 @@ describe('構文解析', () => {
     test('1*2;', () => {
       expect(parse(lex('1*2;')).partsOfSource[0]).toStrictEqual(
         {
-          type: 'Multiple',
+          type: 'Multiply',
           left: { type: 'IntLiteral', value: 1 },
           right: { type: 'IntLiteral', value: 2 },
         },
@@ -142,7 +142,7 @@ describe('構文解析', () => {
           type: 'Add',
           left: { type: 'IntLiteral', value: 1 },
           right: {
-            type: 'Multiple',
+            type: 'Multiply',
             left: { type: 'IntLiteral', value: 2 },
             right: { type: 'IntLiteral', value: 3 },
           },
@@ -154,7 +154,7 @@ describe('構文解析', () => {
         {
           type: 'Add',
           left: {
-            type: 'Multiple',
+            type: 'Multiply',
             left: { type: 'IntLiteral', value: 1 },
             right: { type: 'IntLiteral', value: 2 },
           },
@@ -165,9 +165,9 @@ describe('構文解析', () => {
     test('1*2*3;', () => {
       expect(parse(lex('1*2*3;')).partsOfSource[0]).toStrictEqual(
         {
-          type: 'Multiple',
+          type: 'Multiply',
           left: {
-            type: 'Multiple',
+            type: 'Multiply',
             left: { type: 'IntLiteral', value: 1 },
             right: { type: 'IntLiteral', value: 2 },
           },
@@ -178,7 +178,7 @@ describe('構文解析', () => {
     test('(1+2)*(3+4);', () => {
       expect(parse(lex('(1+2)*(3+4);')).partsOfSource[0]).toStrictEqual(
         {
-          type: 'Multiple',
+          type: 'Multiply',
           left: {
             type: 'Add',
             left: { type: 'IntLiteral', value: 1 },
@@ -195,7 +195,7 @@ describe('構文解析', () => {
     test('foo()*bar();', () => {
       expect(parse(lex('foo()*bar();')).partsOfSource[0]).toStrictEqual(
         {
-          type: 'Multiple',
+          type: 'Multiply',
           left: {
             type: 'FuncCall', name: 'foo', arguments: [],
           },
@@ -462,6 +462,82 @@ describe('構文解析', () => {
           },
         ],
       })
+    })
+    describe('else', () => {
+      test('if-else', () => {
+        expect(parse(lex('if( true ) { a = 1; } else { a = 2; }')).partsOfSource[0]).toStrictEqual(
+          {
+            type: 'If',
+            condition: { type: 'BoolLiteral', value: true },
+            statements: [
+              {
+                type: 'Assignment',
+                name: 'a',
+                expression: { type: 'IntLiteral', value: 1 },
+              },
+            ],
+            elseStatements: [
+              {
+                type: 'Assignment',
+                name: 'a',
+                expression: { type: 'IntLiteral', value: 2 },
+              },
+            ],
+          },
+        )
+      })
+      test('if-else 文あり', () => {
+        expect(parse(lex('if( b == 1 ) { a = 1; } else { a = 2; }')).partsOfSource[0]).toStrictEqual(
+          {
+            type: 'If',
+            condition: {
+              type: 'IsEqual',
+              left: { type: 'Variable', name: 'b' },
+              right: { type: 'IntLiteral', value: 1 },
+            },
+            statements: [
+              {
+                type: 'Assignment',
+                name: 'a',
+                expression: { type: 'IntLiteral', value: 1 },
+              },
+            ],
+            elseStatements: [
+              {
+                type: 'Assignment',
+                name: 'a',
+                expression: { type: 'IntLiteral', value: 2 },
+              },
+            ],
+          },
+        )
+      })
+    })
+  })
+  describe('while', () => {
+    test('while 文あり', () => {
+      expect(parse(lex('while( b == 1 ) { a = 1; c = 1; }')).partsOfSource[0]).toStrictEqual(
+        {
+          type: 'While',
+          condition: {
+            type: 'IsEqual',
+            left: { type: 'Variable', name: 'b' },
+            right: { type: 'IntLiteral', value: 1 },
+          },
+          statements: [
+            {
+              type: 'Assignment',
+              name: 'a',
+              expression: { type: 'IntLiteral', value: 1 },
+            },
+            {
+              type: 'Assignment',
+              name: 'c',
+              expression: { type: 'IntLiteral', value: 1 },
+            },
+          ],
+        },
+      )
     })
   })
   describe('関数定義', () => {

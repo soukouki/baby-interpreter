@@ -41,7 +41,7 @@ function undefinedFunctionError(name) {
 
 // if文の評価をする
 function evaluateIfStatement(ast, initialEnvironment) {
-  const { condition, statements, else_statements} = ast
+  const { condition, statements, elseStatements } = ast
   // eslint-disable-next-line no-use-before-define
   const { result, error, environment: halfwayEnvironment } = evaluate(condition, initialEnvironment)
   if (error) {
@@ -51,8 +51,8 @@ function evaluateIfStatement(ast, initialEnvironment) {
     }
   }
   if ((result.type === 'BoolValue' && result.value === false) || result.type === 'NullValue') {
-    if(else_statements){
-      return evaluateMultiAST(else_statements, halfwayEnvironment)
+    if (elseStatements) {
+      return evaluateMultiAST(elseStatements, halfwayEnvironment)
     }
     return {
       result: nullValue,
@@ -63,27 +63,41 @@ function evaluateIfStatement(ast, initialEnvironment) {
   return evaluateMultiAST(statements, halfwayEnvironment)
 }
 
-function evaluateCondition(ast, initialEnvironment) {
-  const { condition, statements, else_statements} = ast
-  // eslint-disable-next-line no-use-before-define
-  const { result, error, environment: halfwayEnvironment } = evaluate(condition, initialEnvironment)
-  if (error) {
-    return {
-      error,
-      environment: halfwayEnvironment,
-    }
+function evaluateCondition(ast, environment) {
+  const {
+    result: leftResult,
+    error: leftError,
+    environment: leftEnvironment,
+    // eslint-disable-next-line no-use-before-define
+  } = evaluate(ast.left, environment)
+  if (leftError) {
+    return { error: leftError, environment }
   }
-  if ((result.type === 'BoolValue' && result.value === false) || result.type === 'NullValue') {
-    if(else_statements){
-      return evaluateMultiAST(else_statements, halfwayEnvironment)
-    }
-    return {
-      result: nullValue,
-      environment: halfwayEnvironment,
-    }
+  const {
+    result: rightResult,
+    error: rightError,
+    environment: rightEnvironment,
+    // eslint-disable-next-line no-use-before-define
+  } = evaluate(ast.right, leftEnvironment)
+  if (rightError) {
+    return { error: rightError, environment: rightEnvironment }
   }
-  // eslint-disable-next-line no-use-before-define
-  return evaluateMultiAST(statements, halfwayEnvironment)
+  switch(ast.type){
+    case 'IsEqual':
+      return {
+        result: boolValue(ast.left.value == ast.right.value),
+        environment,
+      }
+    case 'IsNotEqual':
+    case 'IsLesserOrEqual':
+    case 'IsGreaterOrEqual':
+    case 'IsLesser':
+    case 'IsGreater': 
+    }
+  return {
+    result: intValue(leftResult.value + rightResult.value),
+    environment: rightEnvironment,
+  }
 }
 
 // 足し算の評価をする
@@ -430,8 +444,36 @@ function evaluate(ast, environment) {
           functions: environment.functions,
         },
       }
-    case 'Condition':
-      return evaluateCondition(ast, environment)
+    case 'IsEqual':
+      return {
+        result: boolValue(ast.left.value === ast.right.value),
+        environment,
+      }
+    case 'IsNotEqual':
+      return {
+        result: boolValue(ast.left.value !== ast.right.value),
+        environment,
+      }
+    case 'IsLesserOrEqual':
+      return {
+        result: boolValue(ast.left.value <= ast.right.value),
+        environment,
+      }
+    case 'IsGreaterOrEqual':
+      return {
+        result: boolValue(ast.left.value >= ast.right.value),
+        environment,
+      }
+    case 'IsLesser':
+      return {
+        result: boolValue(ast.left.value < ast.right.value),
+        environment,
+      }
+    case 'IsGreater':
+      return {
+        result: boolValue(ast.left.value > ast.right.value),
+        environment,
+      }
     case 'If':
       return evaluateIfStatement(ast, environment)
     case 'Add':
